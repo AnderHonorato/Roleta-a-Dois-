@@ -1,152 +1,125 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#120d16" />
-  <meta name="description" content="Roleta a Dois — jogo adulto para casais, feito para maiores de 18 anos e com foco em consentimento." />
-  <title>Roleta a Dois — Versão do GPT</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#120d16">
+  <title>Roleta a Dois — versão GPT</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body data-theme="queer">
-  <svg class="sprite" aria-hidden="true">
-    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M13.8 2.7c.4 3-1.1 4.4-2.1 5.8-.9 1.2-1.6 2.4-.8 4.1.6-1.3 1.4-2.1 2.6-2.9-.1 2.1 1.7 3.1 1.7 5.4 0 2-1.5 3.6-3.4 3.6-2.5 0-4.4-2.1-4.4-4.8 0-3.9 2.8-6.4 6.4-11.2Z"/><path d="M15.5 9.1c2.2 1.8 3.7 4 3.7 6.7 0 3.4-2.8 6.1-6.5 6.1-3.8 0-7-2.8-7-6.7 0-3.1 1.7-5.5 3.5-7.4-.7 2.1-.9 4.2-.1 5.9.3.7.8 1.2 1.3 1.5-.1-3.1 2.1-4.4 5.1-6.1Z"/></symbol>
-    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-5 3.2-7.5 8-7.5S19.4 16 20 21"/></symbol>
-    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10H4Z"/><path d="M16 9c1.3 1.6 1.3 4.4 0 6M18.7 6.7c3 3 3 7.6 0 10.6"/></symbol>
-    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
-    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
-    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21S4 16.5 4 9.7C4 6.8 5.9 5 8.5 5c1.7 0 2.9.8 3.5 2 .6-1.2 1.8-2 3.5-2C18.1 5 20 6.8 20 9.7 20 16.5 12 21 12 21Z"/></symbol>
-    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m5 18 5-5 3 3 2-2 4 4"/></symbol>
-  </svg>
-
-  <div class="age-gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle">
-    <div class="gate-art" aria-hidden="true"><span></span><span></span><span></span></div>
-    <div class="gate-content">
-      <div class="brand-mark" aria-hidden="true"><svg><use href="#i-flame"></use></svg></div>
-      <p class="eyebrow">ROULETTE AFTER DARK</p>
-      <h1 id="ageTitle">Isso aqui é para adultos.</h1>
-      <p>Uma brincadeira consensual para casais maiores de 18 anos. Vocês definem os limites; a roleta só provoca.</p>
-      <label class="consent-line"><input id="consentCheck" type="checkbox" /> <span>Confirmo que tenho 18+ e que todos participam por vontade própria.</span></label>
-      <button class="primary-action" id="enterBtn" disabled>Entrar no clima <svg><use href="#i-chevron"></use></svg></button>
-      <small>Sem câmera, microfone ou localização. No modo demo, preferências ficam apenas neste navegador.</small>
-    </div>
-  </div>
-
-  <div class="setup-layer" id="setupLayer" hidden>
-    <header class="setup-head">
-      <div class="logo-lockup"><span class="logo-dot"></span><strong>Roleta a Dois</strong><small>versão do GPT</small></div>
-      <span class="step-label" id="stepLabel">01 / 03</span>
-    </header>
-    <main class="setup-main">
-      <section class="setup-step active" data-step="1">
-        <p class="eyebrow">Primeiro, vocês</p>
-        <h2>Qual energia combina com o casal?</h2>
-        <p class="lead">A escolha muda cores, detalhes gráficos e parte da linguagem. Sem estereótipos prontos.</p>
-        <div class="theme-rail" id="themeRail" role="radiogroup" aria-label="Tipo de casal"></div>
-      </section>
-      <section class="setup-step" data-step="2">
-        <p class="eyebrow">Agora os limites</p>
-        <h2>Até onde a roleta pode ir?</h2>
-        <p class="lead">Você pode mudar depois. Hardcore exige confirmação extra antes de entrar nas rodadas.</p>
-        <div class="level-spectrum" id="levelSpectrum"></div>
-      </section>
-      <section class="setup-step" data-step="3">
-        <p class="eyebrow">Último detalhe</p>
-        <h2>Como chamamos vocês?</h2>
-        <div class="names-line">
-          <label><span>Pessoa 1</span><input id="nameOne" value="Ander" maxlength="24" /></label>
-          <span class="names-x">×</span>
-          <label><span>Pessoa 2</span><input id="nameTwo" value="Par" maxlength="24" /></label>
-        </div>
-        <p class="lead compact">No modo demo isso não cria conta real. Depois o mesmo perfil pode ser ligado a um backend.</p>
-      </section>
-    </main>
-    <footer class="setup-footer">
-      <button class="text-action" id="setupBack" disabled>Voltar</button>
-      <div class="progress-track"><span id="progressFill"></span></div>
-      <button class="primary-action compact-btn" id="setupNext">Continuar <svg><use href="#i-chevron"></use></svg></button>
-    </footer>
-  </div>
-
-  <div class="app-shell" id="appShell" hidden>
+<body>
+  <main class="shell" id="app">
     <header class="topbar">
-      <button class="couple-trigger" id="coupleTrigger" aria-label="Abrir perfil do casal">
-        <span class="avatar-stack"><span id="avatarOne">A</span><span id="avatarTwo">P</span></span>
-        <span class="couple-copy"><strong id="coupleName">Ander × Par</strong><small>modo demo local</small></span>
-      </button>
-      <div class="top-actions">
-        <button class="icon-btn" id="soundBtn" aria-label="Ativar ou desativar sons"><svg><use href="#i-sound"></use></svg></button>
-        <button class="icon-btn" id="settingsBtn" aria-label="Abrir configurações"><svg><use href="#i-settings"></use></svg></button>
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <div><strong>Roleta a Dois</strong><small>Ander × Lil</small></div>
       </div>
+      <button class="icon-btn" id="soundBtn" aria-label="Ativar ou desativar sons">♪</button>
     </header>
 
-    <section class="banner-stage" id="bannerStage" aria-label="Banners do casal">
-      <div class="banner-track" id="bannerTrack"></div>
-      <div class="banner-copy"><span id="bannerKicker">SEM PRESSA</span><strong id="bannerTitle">Hoje a roleta decide.</strong></div>
-      <div class="banner-dots" id="bannerDots"></div>
+    <section class="hero-banner" aria-label="Banner">
+      <div class="hero-copy">
+        <span class="eyebrow">MODO DEMO LOCAL</span>
+        <strong>O dado provoca. Vocês decidem.</strong>
+        <small>18+ · consentimento sempre</small>
+      </div>
+      <div class="hero-orbit orbit-a"></div>
+      <div class="hero-orbit orbit-b"></div>
     </section>
 
-    <main class="game-space">
-      <section class="score-strip" aria-label="Resumo da sessão">
-        <div><small>Pontos</small><strong id="points">0</strong></div>
-        <span class="score-divider"></span>
-        <div><small>Sequência</small><strong id="streak">×1</strong></div>
-        <span class="score-divider"></span>
-        <div><small>Sessão</small><strong id="sessionTime">00:00</strong></div>
-        <span class="score-divider"></span>
-        <div><small>Sem ação</small><strong id="idleTime">00:00</strong></div>
-      </section>
+    <section class="players-strip" aria-label="Ranking individual">
+      <article class="player-score" id="scoreAnder">
+        <span class="avatar">A</span>
+        <div><small>#1 / #2</small><strong>Ander</strong></div>
+        <b id="anderPoints">0</b>
+      </article>
+      <div class="versus">×</div>
+      <article class="player-score" id="scoreLil">
+        <span class="avatar alt">L</span>
+        <div><small>Maurício</small><strong>Lil</strong></div>
+        <b id="lilPoints">0</b>
+      </article>
+    </section>
 
-      <section class="play-stage" aria-live="polite">
-        <div class="ambient-orbit orbit-one"></div><div class="ambient-orbit orbit-two"></div>
-        <p class="intensity-tag" id="intensityTag">QUENTE · +20</p>
-        <div class="position-reveal" id="positionReveal">
-          <span class="word left" id="wordLeft">PRONTOS</span>
-          <div class="die-zone" id="dieZone" aria-hidden="true">
-            <div class="die" id="die">
-              <span class="die-face front">●</span><span class="die-face back">● ●</span><span class="die-face right">● ● ●</span><span class="die-face left">● ●<br>● ●</span><span class="die-face top">● ●<br> ● <br>● ●</span><span class="die-face bottom">● ● ●<br>● ● ●</span>
-            </div>
-            <span class="die-shadow"></span>
-          </div>
-          <span class="word right" id="wordRight">?</span>
+    <section class="session-strip">
+      <div><small>Rodadas</small><strong id="rounds">0</strong></div>
+      <div><small>Sequência</small><strong id="streak">×1</strong></div>
+      <div><small>Sessão</small><strong id="sessionTime">00:00</strong></div>
+      <div><small>Sem ação</small><strong id="idleTime">00:00</strong></div>
+    </section>
+
+    <section class="game-stage" id="gameStage" aria-live="polite">
+      <div class="level-line">
+        <span id="levelLabel">QUENTE · 20 PTS</span>
+        <button id="levelBtn" class="soft-btn" type="button">Mudar nível</button>
+      </div>
+
+      <button class="die-button" id="dieButton" type="button" aria-label="Rolar o dado">
+        <span class="die" id="die" aria-hidden="true">
+          <i class="face f1">●</i>
+          <i class="face f2">● ●</i>
+          <i class="face f3">● ● ●</i>
+          <i class="face f4">● ●<br>● ●</i>
+          <i class="face f5">● ●<br> ● <br>● ●</i>
+          <i class="face f6">● ● ●<br>● ● ●</i>
+        </span>
+        <span class="die-shadow"></span>
+      </button>
+
+      <div class="word-pair" id="wordPair">
+        <span id="wordA">TOQUE</span>
+        <em>+</em>
+        <span id="wordB">SURPRESA</span>
+      </div>
+
+      <div class="explanation">
+        <span class="eyebrow">COMO FAZER</span>
+        <h2 id="challengeTitle">Role o dado para começar</h2>
+        <p id="challengeDesc">A combinação aparece acima e a explicação fica aqui, organizada e separada.</p>
+      </div>
+
+      <div class="tease" id="tease">Cada clique muda o clima.</div>
+
+      <div class="main-actions">
+        <button class="primary-btn" id="rollBtn" type="button">Rolar o dado</button>
+        <button class="primary-btn hidden" id="finishBtn" type="button">Finalizar rodada</button>
+      </div>
+
+      <div class="outcome-panel hidden" id="outcomePanel">
+        <span class="eyebrow">O QUE ACONTECEU?</span>
+        <h3>Escolha antes de pontuar</h3>
+        <div class="outcome-grid">
+          <button type="button" data-outcome="done">🔥 Fizemos</button>
+          <button type="button" data-outcome="anderQuit">Ander desistiu</button>
+          <button type="button" data-outcome="lilQuit">Lil desistiu</button>
+          <button type="button" data-outcome="bothQuit">Os dois desistiram</button>
         </div>
-        <h2 class="challenge-title" id="challengeTitle">Deixem o acaso provocar.</h2>
-        <p class="challenge-desc" id="challengeDesc">Toque no dado. Depois vocês decidem se encaram ou se a coragem ficou para a próxima.</p>
-        <div class="prompt-bubble" id="promptBubble">A primeira rodada sempre parece inocente.</div>
-      </section>
+        <small>Fizeram: ambos pontuam. Se só um desistir, o outro recebe 40% dos pontos da rodada como bônus de coragem.</small>
+      </div>
 
-      <section class="action-dock">
-        <button class="roll-action" id="rollBtn"><span>Rolar o dado</span><svg><use href="#i-flame"></use></svg></button>
-        <div class="result-actions" id="resultActions" hidden>
-          <button class="done-action" id="doneBtn">Fizemos <span>🔥</span></button>
-          <button class="skip-action" id="skipBtn">Desistir e tentar outro</button>
-        </div>
-      </section>
+      <div class="feedback-layer" id="feedbackLayer" aria-hidden="true"></div>
+    </section>
 
-      <section class="session-ribbon">
-        <div class="ribbon-title"><span>Ritmo da noite</span><strong id="roundSummary">0 rodadas · 0 feitas · 0 trocas</strong></div>
-        <div class="streak-line"><span id="streakFill"></span></div>
-        <p id="sessionHint">Complete rodadas em sequência para multiplicar os pontos.</p>
-      </section>
-    </main>
+    <section class="history-section">
+      <div class="section-head">
+        <div><span class="eyebrow">PLACAR</span><h3>Ranking da noite</h3></div>
+        <strong id="leaderText">Empatados</strong>
+      </div>
+      <div class="rank-bars">
+        <div class="rank-row"><span>Ander</span><div><i id="anderBar"></i></div><b id="anderRankPts">0</b></div>
+        <div class="rank-row"><span>Lil</span><div><i id="lilBar"></i></div><b id="lilRankPts">0</b></div>
+      </div>
+      <div class="last-result" id="lastResult">Nenhuma rodada finalizada ainda.</div>
+    </section>
+  </main>
 
-    <nav class="bottom-nav" aria-label="Navegação principal">
-      <button class="nav-active" data-panel="game"><span class="nav-glyph">◆</span><small>Jogar</small></button>
-      <button data-panel="history"><span class="nav-glyph">↗</span><small>Histórico</small></button>
-      <button data-panel="achievements"><span class="nav-glyph">✦</span><small>Conquistas</small></button>
-      <button data-panel="profile"><span class="nav-glyph">◉</span><small>Casal</small></button>
-    </nav>
-  </div>
-
-  <dialog class="sheet" id="sheet">
-    <div class="sheet-head"><div><p class="eyebrow" id="sheetEyebrow">AJUSTES</p><h2 id="sheetTitle">Preferências</h2></div><button class="icon-btn" id="closeSheet" aria-label="Fechar"><svg><use href="#i-close"></use></svg></button></div>
-    <div class="sheet-body" id="sheetBody"></div>
+  <dialog id="levelDialog" class="level-dialog">
+    <form method="dialog">
+      <div class="dialog-head"><div><span class="eyebrow">INTENSIDADE</span><h2>Até onde o dado pode ir?</h2></div><button value="cancel" class="icon-btn">×</button></div>
+      <div id="levelOptions" class="level-options"></div>
+    </form>
   </dialog>
-
-  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>
