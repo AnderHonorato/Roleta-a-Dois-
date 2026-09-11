@@ -3,6 +3,7 @@ import { getMessage, messageCount } from '@/data/messages';
 import { pickDifferent, pickWeighted, randomInt } from '@/lib/rng';
 import { formatClock, formatDuration, formatPoints, initialsOf } from '@/lib/format';
 import { checkPassword, cleanLine, cleanUsername, isValidEmail, safeFileName } from '@/lib/sanitize';
+import { senhaCurta, senhaSemLetra, senhaSemNumero, senhaValida } from './fixtures';
 import { evaluateAchievements } from '@/features/game/achievements';
 import { ACHIEVEMENTS } from '@/data/achievements';
 
@@ -96,10 +97,10 @@ describe('saneamento e validacao', () => {
   });
 
   it('exige senha com letra, numero e 8 caracteres', () => {
-    expect(checkPassword('curta1').ok).toBe(false);
-    expect(checkPassword('somenteletras').ok).toBe(false);
-    expect(checkPassword('12345678').ok).toBe(false);
-    expect(checkPassword('senhaboa1').ok).toBe(true);
+    expect(checkPassword(senhaCurta()).ok).toBe(false);
+    expect(checkPassword(senhaSemNumero()).ok).toBe(false);
+    expect(checkPassword(senhaSemLetra()).ok).toBe(false);
+    expect(checkPassword(senhaValida('ok')).ok).toBe(true);
   });
 
   it('gera nome de arquivo seguro', () => {

@@ -2,6 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { webcrypto } from 'node:crypto';
 import { authenticate, changePassword, createUser, emptyState, resetPasswordWithPartner } from '@/services/auth';
 import { hashPassword, createSalt, safeEqual, verifyPassword } from '@/lib/crypto';
+import { senhaCurta, senhaValida } from './fixtures';
+
+const SENHA = senhaValida('alex');
+const SENHA_PARCEIRO = senhaValida('sam');
+const SENHA_NOVA = senhaValida('nova');
+const SENHA_ERRADA = senhaValida('chute');
 
 // jsdom nao expoe WebCrypto completo; usamos o do Node.
 beforeAll(() => {
@@ -13,22 +19,22 @@ beforeAll(() => {
 describe('derivacao de senha', () => {
   it('nunca devolve a senha em texto puro', async () => {
     const salt = createSalt();
-    const hash = await hashPassword('senhaboa1', salt);
-    expect(hash).not.toContain('senhaboa1');
+    const hash = await hashPassword(SENHA, salt);
+    expect(hash).not.toContain(SENHA);
     expect(hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('salts diferentes produzem hashes diferentes', async () => {
-    const a = await hashPassword('senhaboa1', createSalt());
-    const b = await hashPassword('senhaboa1', createSalt());
+    const a = await hashPassword(SENHA, createSalt());
+    const b = await hashPassword(SENHA, createSalt());
     expect(a).not.toBe(b);
   });
 
   it('verifica corretamente', async () => {
     const salt = createSalt();
-    const hash = await hashPassword('senhaboa1', salt);
-    expect(await verifyPassword('senhaboa1', salt, hash)).toBe(true);
-    expect(await verifyPassword('outrasenha1', salt, hash)).toBe(false);
+    const hash = await hashPassword(SENHA, salt);
+    expect(await verifyPassword(SENHA, salt, hash)).toBe(true);
+    expect(await verifyPassword(SENHA_PARCEIRO, salt, hash)).toBe(false);
   });
 
   it('comparacao em tempo constante funciona como igualdade', () => {
@@ -43,7 +49,7 @@ describe('cadastro', () => {
     email: 'alex@exemplo.com',
     username: 'alex',
     displayName: 'Alex',
-    password: 'senhaboa1',
+    password: SENHA,
   };
 
   it('cria usuario com hash e salt', async () => {
@@ -51,7 +57,7 @@ describe('cadastro', () => {
     expect(result.ok).toBe(true);
     expect(result.data?.passwordHash).toBeTruthy();
     expect(result.data?.passwordSalt).toBeTruthy();
-    expect(JSON.stringify(result.data)).not.toContain('senhaboa1');
+    expect(JSON.stringify(result.data)).not.toContain(SENHA);
   });
 
   it('recusa e-mail invalido', async () => {
@@ -60,7 +66,7 @@ describe('cadastro', () => {
   });
 
   it('recusa senha fraca', async () => {
-    const result = await createUser({ ...valid, password: 'abc' });
+    const result = await createUser({ ...valid, password: senhaCurta() });
     expect(result.ok).toBe(false);
   });
 
@@ -76,13 +82,13 @@ describe('login', () => {
       email: 'sam@exemplo.com',
       username: 'sam',
       displayName: 'Sam',
-      password: 'senhaboa1',
+      password: SENHA,
     });
     const users = [created.data!];
 
-    expect((await authenticate(users, 'sam', 'senhaboa1')).ok).toBe(true);
-    expect((await authenticate(users, 'sam@exemplo.com', 'senhaboa1')).ok).toBe(true);
-    expect((await authenticate(users, 'sam', 'errada1')).ok).toBe(false);
+    expect((await authenticate(users, 'sam', SENHA)).ok).toBe(true);
+    expect((await authenticate(users, 'sam@exemplo.com', SENHA)).ok).toBe(true);
+    expect((await authenticate(users, 'sam', SENHA_ERRADA)).ok).toBe(false);
   });
 
   it('nao revela se o usuario existe', async () => {
@@ -90,10 +96,10 @@ describe('login', () => {
       email: 'sam@exemplo.com',
       username: 'sam',
       displayName: 'Sam',
-      password: 'senhaboa1',
+      password: SENHA,
     });
-    const inexistente = await authenticate([created.data!], 'ninguem', 'senhaboa1');
-    const senhaErrada = await authenticate([created.data!], 'sam', 'errada1');
+    const inexistente = await authenticate([created.data!], 'ninguem', SENHA);
+    const senhaErrada = await authenticate([created.data!], 'sam', SENHA_ERRADA);
     expect(inexistente.error).toBe(senhaErrada.error);
   });
 });
@@ -104,27 +110,27 @@ describe('troca e recuperacao de senha', () => {
       email: 'a@b.com',
       username: 'alex',
       displayName: 'Alex',
-      password: 'senhaboa1',
+      password: SENHA,
     });
     const user = created.data!;
 
-    expect((await changePassword(user, 'errada1', 'novasenha1')).ok).toBe(false);
+    expect((await changePassword(user, SENHA_ERRADA, SENHA_NOVA)).ok).toBe(false);
 
-    const changed = await changePassword(user, 'senhaboa1', 'novasenha1');
+    const changed = await changePassword(user, SENHA, SENHA_NOVA);
     expect(changed.ok).toBe(true);
-    expect(await verifyPassword('novasenha1', changed.data!.passwordSalt, changed.data!.passwordHash)).toBe(true);
+    expect(await verifyPassword(SENHA_NOVA, changed.data!.passwordSalt, changed.data!.passwordHash)).toBe(true);
   });
 
   it('exige a senha da outra pessoa para redefinir', async () => {
     const [one, two] = await Promise.all([
-      createUser({ email: 'a@b.com', username: 'alex', displayName: 'Alex', password: 'senhaboa1' }),
-      createUser({ email: 'c@d.com', username: 'sam', displayName: 'Sam', password: 'outrasenha1' }),
+      createUser({ email: 'a@b.com', username: 'alex', displayName: 'Alex', password: SENHA }),
+      createUser({ email: 'c@d.com', username: 'sam', displayName: 'Sam', password: SENHA_PARCEIRO }),
     ]);
 
-    const semAutorizacao = await resetPasswordWithPartner(one.data!, two.data!, 'chute1234', 'novasenha1');
+    const semAutorizacao = await resetPasswordWithPartner(one.data!, two.data!, SENHA_ERRADA, SENHA_NOVA);
     expect(semAutorizacao.ok).toBe(false);
 
-    const autorizado = await resetPasswordWithPartner(one.data!, two.data!, 'outrasenha1', 'novasenha1');
+    const autorizado = await resetPasswordWithPartner(one.data!, two.data!, SENHA_PARCEIRO, SENHA_NOVA);
     expect(autorizado.ok).toBe(true);
   });
 });

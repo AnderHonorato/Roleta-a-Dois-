@@ -7,10 +7,20 @@ import { STATE_VERSION } from './config';
 /**
  * Casal mockado do modo demo/convidado.
  *
- * Isolado neste arquivo de proposito: ao remover o modo demo,
- * apaga-se este arquivo e a chamada em app/state.ts, nada mais.
- * As senhas do casal fake tambem passam por PBKDF2 - nada de
- * senha em texto puro, nem em dado de exemplo.
+ * Isolado neste arquivo de proposito: ao remover o modo demo, apaga-se
+ * este arquivo e as duas chamadas que o importam (Onboarding.tsx e
+ * SettingsScreen.tsx), nada mais. As senhas do casal fake tambem passam
+ * por PBKDF2 - nada de senha em texto puro, nem em dado de exemplo.
+ */
+
+/**
+ * Senha do casal de demonstracao.
+ *
+ * E publica de proposito: esta documentada no README para que qualquer
+ * pessoa consiga entrar no modo convidado. Nao e uma credencial - nao
+ * existe servidor, conta ou servico por tras dela, e ela some junto com
+ * o modo demo. Ainda assim passa por PBKDF2 antes de ser gravada, como
+ * qualquer outra.
  */
 const DEMO_PASSWORD = 'demo1234';
 
