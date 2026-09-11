@@ -1,178 +1,335 @@
 (() => {
   'use strict';
+
   const DATA = window.ROULETTE_DATA;
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-  const storeKey = 'roleta-a-dois-gpt-v1';
-  const initialState = {
-    ageAccepted:false, setupDone:false, theme:'queer', maxLevel:'quente', names:['Ander','Par'], points:0, streak:1,
-    rounds:0, done:0, skipped:0, startedAt:Date.now(), lastActionAt:Date.now(), history:[], achievements:[], sound:true,
-    bannerIndex:0, userBanners:[]
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+  const key = 'roleta-a-dois-gpt-v2';
+
+  const defaults = {
+    maxLevel:'quente',
+    sound:true,
+    scores:{ander:0,lil:0},
+    rounds:0,
+    streak:1,
+    startedAt:Date.now(),
+    lastActionAt:Date.now(),
+    history:[]
   };
-  let state = loadState();
-  let setupStep = 1;
-  let currentChallenge = null;
-  let rollLocked = false;
-  let idleToastMark = 0;
-  let sessionTicker = null;
-  let bannerTimer = null;
 
-  function loadState(){
-    try { return {...initialState, ...JSON.parse(localStorage.getItem(storeKey) || '{}'), startedAt:Date.now(), lastActionAt:Date.now()}; }
-    catch { return {...initialState}; }
-  }
-  function persist(){
-    try { localStorage.setItem(storeKey, JSON.stringify({...state, userBanners:state.userBanners.slice(0,4)})); } catch {}
-  }
-  function pick(list){ return list[Math.floor(Math.random()*list.length)]; }
-  function escapeHtml(value=''){ return value.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-  function formatTime(ms){ const total=Math.max(0,Math.floor(ms/1000)); const m=Math.floor(total/60).toString().padStart(2,'0'); const s=(total%60).toString().padStart(2,'0'); return `${m}:${s}`; }
-  function levelIndex(id){ return DATA.levels.findIndex(l=>l.id===id); }
-  function levelMeta(id){ return DATA.levels.find(l=>l.id===id) || DATA.levels[1]; }
-  function touch(){ state.lastActionAt=Date.now(); idleToastMark=0; }
-  function toast(message){
-    const node=document.createElement('div'); node.className='toast'; node.textContent=message; $('#toastStack').appendChild(node); setTimeout(()=>node.remove(),3500);
-  }
+  let state = load();
+  let current = null;
+  let locked = false;
+  let timer = null;
+  let audioCtx = null;
 
-  function init(){
-    document.body.dataset.theme=state.theme;
-    renderThemeChoices(); renderLevels(); wireBaseEvents(); updateCoupleUI(); renderBanners(); updateStats(); startTimers();
-    if(state.ageAccepted){ $('#ageGate').hidden=true; state.setupDone ? showApp() : showSetup(); }
-    else { $('#ageGate').hidden=false; }
-  }
-
-  function wireBaseEvents(){
-    $('#consentCheck').addEventListener('change', e => $('#enterBtn').disabled=!e.target.checked);
-    $('#enterBtn').addEventListener('click', () => { state.ageAccepted=true; persist(); $('#ageGate').hidden=true; showSetup(); });
-    $('#setupBack').addEventListener('click', () => changeSetup(-1));
-    $('#setupNext').addEventListener('click', () => changeSetup(1));
-    $('#nameOne').addEventListener('input', e => state.names[0]=e.target.value.trim() || 'Pessoa 1');
-    $('#nameTwo').addEventListener('input', e => state.names[1]=e.target.value.trim() || 'Pessoa 2');
-    $('#rollBtn').addEventListener('click', rollChallenge);
-    $('#doneBtn').addEventListener('click', completeChallenge);
-    $('#skipBtn').addEventListener('click', skipChallenge);
-    $('#settingsBtn').addEventListener('click', openSettings);
-    $('#coupleTrigger').addEventListener('click', openProfile);
-    $('#closeSheet').addEventListener('click', () => $('#sheet').close());
-    $('#soundBtn').addEventListener('click', () => { state.sound=!state.sound; persist(); toast(state.sound?'Sons ativados.':'Sons silenciados.'); });
-    $$('.bottom-nav button').forEach(btn => btn.addEventListener('click', () => handleNav(btn.dataset.panel, btn)));
-    ['pointerdown','keydown','touchstart'].forEach(ev => document.addEventListener(ev, touch, {passive:true}));
-  }
-
-  function showSetup(){ $('#setupLayer').hidden=false; $('#appShell').hidden=true; renderSetupStep(); }
-  function showApp(){ $('#setupLayer').hidden=true; $('#appShell').hidden=false; updateCoupleUI(); updateStats(); }
-  function changeSetup(dir){
-    if(dir>0 && setupStep===2 && state.maxLevel==='hardcore'){
-      if(!confirm('Hardcore libera desafios mais intensos. Confirma que todos são maiores de 18 anos e concordam com esse nível?')) return;
+  function load(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      return {
+        ...defaults,
+        ...saved,
+        scores:{...defaults.scores,...(saved.scores||{})},
+        startedAt:Date.now(),
+        lastActionAt:Date.now()
+      };
+    }catch{
+      return {...defaults};
     }
-    if(dir>0 && setupStep===3){
-      state.names=[$('#nameOne').value.trim()||'Pessoa 1',$('#nameTwo').value.trim()||'Pessoa 2']; state.setupDone=true; persist(); showApp(); toast('Perfil local pronto. Agora é com o dado.'); return;
-    }
-    setupStep=Math.min(3,Math.max(1,setupStep+dir)); renderSetupStep();
   }
-  function renderSetupStep(){
-    $$('.setup-step').forEach(step=>step.classList.toggle('active',Number(step.dataset.step)===setupStep));
-    $('#stepLabel').textContent=`0${setupStep} / 03`; $('#progressFill').style.width=`${setupStep*33.34}%`; $('#setupBack').disabled=setupStep===1;
-    $('#setupNext').innerHTML=setupStep===3?'Começar <svg><use href="#i-chevron"></use></svg>':'Continuar <svg><use href="#i-chevron"></use></svg>';
-    $('#nameOne').value=state.names[0]; $('#nameTwo').value=state.names[1];
+
+  function save(){
+    try{ localStorage.setItem(key, JSON.stringify(state)); }catch{}
   }
-  function renderThemeChoices(){
-    $('#themeRail').innerHTML=DATA.themes.map(t=>`<button class="theme-choice ${state.theme===t.id?'selected':''}" style="--choice-accent:${t.accent}" data-theme-id="${t.id}" role="radio" aria-checked="${state.theme===t.id}"><strong>${t.label}</strong><small>${t.tagline}</small></button>`).join('');
-    $$('.theme-choice').forEach(btn=>btn.addEventListener('click',()=>{
-      state.theme=btn.dataset.themeId; document.body.dataset.theme=state.theme; $$('.theme-choice').forEach(x=>{x.classList.toggle('selected',x===btn);x.setAttribute('aria-checked',x===btn)}); persist();
-    }));
+
+  function format(ms){
+    const total = Math.max(0, Math.floor(ms/1000));
+    const m = String(Math.floor(total/60)).padStart(2,'0');
+    const s = String(total%60).padStart(2,'0');
+    return `${m}:${s}`;
   }
+
+  function levelIndex(id){ return DATA.levels.findIndex(x=>x.id===id); }
+  function levelMeta(id){ return DATA.levels.find(x=>x.id===id) || DATA.levels[1]; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function touch(){ state.lastActionAt = Date.now(); }
+
+  function ensureAudio(){
+    if(!state.sound) return null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    if(!audioCtx) audioCtx = new AC();
+    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    return audioCtx;
+  }
+
+  function tone(freq=220, dur=.08, gain=.04, type='sine', delay=0){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    amp.gain.setValueAtTime(.0001, ctx.currentTime + delay);
+    amp.gain.exponentialRampToValueAtTime(Math.max(.001,gain), ctx.currentTime + delay + .01);
+    amp.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + delay + dur);
+    osc.connect(amp).connect(ctx.destination);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + dur + .02);
+  }
+
+  function soundClick(){ tone(260,.045,.025,'square',0); tone(180,.05,.02,'sine',.035); }
+  function soundRoll(){ [160,210,140,260].forEach((f,i)=>tone(f,.055,.028,'triangle',i*.13)); tone(110,.08,.035,'sine',.58); }
+  function soundWin(){ tone(420,.08,.04,'sine',0); tone(620,.08,.04,'sine',.09); tone(820,.12,.045,'triangle',.18); }
+  function soundPartial(){ tone(300,.08,.035,'triangle',0); tone(420,.09,.035,'triangle',.1); }
+  function soundLose(){ tone(210,.11,.035,'sawtooth',0); tone(145,.14,.035,'sawtooth',.1); }
+
+  function init(){ wire(); renderLevels(); updateLevel(); updateStats(); startTimer(); }
+
+  function wire(){
+    $('#rollBtn').addEventListener('click', roll);
+    $('#dieButton').addEventListener('click', roll);
+    $('#finishBtn').addEventListener('click', showOutcome);
+    $('#levelBtn').addEventListener('click', ()=>$('#levelDialog').showModal());
+
+    $('#soundBtn').addEventListener('click', ()=>{
+      state.sound = !state.sound;
+      $('#soundBtn').textContent = state.sound ? '♪' : '×';
+      $('#soundBtn').setAttribute('aria-label', state.sound ? 'Desativar sons' : 'Ativar sons');
+      save();
+      if(state.sound) soundClick();
+    });
+
+    $$('#outcomePanel [data-outcome]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ soundClick(); resolveOutcome(btn.dataset.outcome); });
+    });
+
+    ['pointerdown','keydown','touchstart'].forEach(ev=>{
+      document.addEventListener(ev, touch, {passive:true});
+    });
+  }
+
   function renderLevels(){
-    $('#levelSpectrum').innerHTML=DATA.levels.map((l,i)=>`<button class="level-option ${state.maxLevel===l.id?'selected':''}" data-level-id="${l.id}"><span class="level-index">0${i+1}</span><span class="level-copy"><strong>${l.label}</strong><small>${l.note}</small></span><span class="level-score">+${l.score}</span></button>`).join('');
-    $$('.level-option').forEach(btn=>btn.addEventListener('click',()=>{ state.maxLevel=btn.dataset.levelId; $$('.level-option').forEach(x=>x.classList.toggle('selected',x===btn)); persist(); }));
+    $('#levelOptions').innerHTML = DATA.levels.map(l=>`
+      <button class="level-option ${l.id===state.maxLevel?'selected':''}" type="button" data-level="${l.id}">
+        <span><strong>${l.label}</strong><small>${l.note}</small></span>
+        <b>${l.score} pts</b>
+      </button>
+    `).join('');
+
+    $$('#levelOptions [data-level]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.level;
+        if(id === 'hardcore'){
+          const ok = confirm('Hardcore libera desafios mais intensos. Confirma que todos são maiores de 18 anos e concordam com esse nível?');
+          if(!ok) return;
+        }
+        state.maxLevel = id;
+        save();
+        updateLevel();
+        renderLevels();
+        $('#levelDialog').close();
+        soundClick();
+      });
+    });
   }
 
-  function rollChallenge(){
-    if(rollLocked) return; rollLocked=true; touch(); $('#rollBtn').disabled=true; $('#resultActions').hidden=true;
-    const die=$('#die'); die.classList.remove('rolling'); void die.offsetWidth; die.classList.add('rolling');
-    playTone(160, .06, 0.12); setTimeout(()=>playTone(220,.05,.08),380); setTimeout(()=>playTone(120,.07,.1),940);
-    const allowedIndex=levelIndex(state.maxLevel); const pool=DATA.challenges.filter(c=>levelIndex(c.level)<=allowedIndex && (!currentChallenge || c.title!==currentChallenge.title)); currentChallenge=pick(pool);
-    setTimeout(()=>{ revealChallenge(currentChallenge); state.rounds++; updateStats(); rollLocked=false; $('#rollBtn').disabled=false; $('#rollBtn').hidden=true; $('#resultActions').hidden=false; persist(); checkAchievements(); },1260);
+  function updateLevel(){
+    const m = levelMeta(state.maxLevel);
+    $('#levelLabel').textContent = `${m.label.toUpperCase()} · ${m.score} PTS`;
   }
-  function revealChallenge(c){
-    $('#wordLeft').textContent=c.left; $('#wordRight').textContent=c.right; $('#challengeTitle').textContent=c.title; $('#challengeDesc').textContent=c.desc;
-    const meta=levelMeta(c.level); $('#intensityTag').textContent=`${meta.label.toUpperCase()} · +${meta.score}`; $('#promptBubble').textContent=pick(DATA.messages.rolled);
+
+  function roll(){
+    if(locked) return;
+    locked = true;
+    touch();
+    soundClick();
+    soundRoll();
+
+    $('#outcomePanel').classList.add('hidden');
+    $('#finishBtn').classList.add('hidden');
+    $('#rollBtn').classList.add('hidden');
+
+    const die = $('#die');
+    const dieButton = $('#dieButton');
+    die.classList.remove('rolling');
+    dieButton.classList.remove('rolling');
+    void die.offsetWidth;
+    die.classList.add('rolling');
+    dieButton.classList.add('rolling');
+
+    const allowed = DATA.challenges.filter(c=>levelIndex(c.level)<=levelIndex(state.maxLevel) && c!==current);
+    current = pick(allowed);
+
+    setTimeout(()=>{
+      reveal(current);
+      state.rounds++;
+      updateStats();
+      save();
+      locked = false;
+      $('#finishBtn').classList.remove('hidden');
+      dieButton.classList.remove('rolling');
+    },1080);
   }
-  function completeChallenge(){
-    if(!currentChallenge) return; touch(); const meta=levelMeta(currentChallenge.level); const mult=Math.min(3, 1+(Math.max(0,state.streak-1)*.25)); const gained=Math.round(meta.score*mult);
-    state.points+=gained; state.done++; state.streak++; state.history.unshift({type:'done',title:currentChallenge.title,words:`${currentChallenge.left} ${currentChallenge.right}`,points:gained,at:Date.now()}); state.history=state.history.slice(0,40);
-    $('#promptBubble').textContent=pick(DATA.messages.done); toast(`+${gained} pontos · sequência ×${state.streak}`); playTone(520,.08,.08); setTimeout(()=>playTone(720,.07,.06),100); resetRoundSoon(); persist(); updateStats(); checkAchievements();
+
+  function reveal(c){
+    $('#wordA').textContent = c.a;
+    $('#wordB').textContent = c.b;
+    $('#challengeTitle').textContent = c.title;
+    $('#challengeDesc').textContent = c.desc;
+    $('#tease').textContent = pick(DATA.messages.rolled);
+
+    const pair = $('#wordPair');
+    pair.classList.remove('reveal');
+    void pair.offsetWidth;
+    pair.classList.add('reveal');
+
+    const m = levelMeta(c.level);
+    $('#levelLabel').textContent = `${m.label.toUpperCase()} · ${m.score} PTS`;
   }
-  function skipChallenge(){
-    if(!currentChallenge) return; touch(); state.skipped++; state.streak=Math.max(1,state.streak-1); state.history.unshift({type:'skip',title:currentChallenge.title,words:`${currentChallenge.left} ${currentChallenge.right}`,points:0,at:Date.now()}); state.history=state.history.slice(0,40); $('#promptBubble').textContent=pick(DATA.messages.skipped); persist(); updateStats(); setTimeout(()=>{ $('#rollBtn').hidden=false; $('#resultActions').hidden=true; rollChallenge(); },420);
+
+  function showOutcome(){
+    if(!current) return;
+    soundClick();
+    $('#finishBtn').classList.add('hidden');
+    $('#outcomePanel').classList.remove('hidden');
+    $('#outcomePanel').scrollIntoView({behavior:'smooth',block:'nearest'});
   }
-  function resetRoundSoon(){
-    setTimeout(()=>{ currentChallenge=null; $('#rollBtn').hidden=false; $('#resultActions').hidden=true; $('#wordLeft').textContent='DE NOVO'; $('#wordRight').textContent='?'; $('#challengeTitle').textContent='A próxima já está esperando.'; $('#challengeDesc').textContent='Quando estiverem prontos, rolem outra vez.'; },520);
+
+  function resolveOutcome(type){
+    if(!current || locked) return;
+    locked = true;
+
+    const base = levelMeta(current.level).score;
+    const mult = Math.min(2.5, 1 + Math.max(0,state.streak-1)*.15);
+    let aGain = 0;
+    let lGain = 0;
+    let cls = 'lose';
+    let text = '';
+
+    if(type === 'done'){
+      aGain = Math.round(base * mult);
+      lGain = Math.round(base * mult);
+      state.streak++;
+      cls = 'win';
+      text = `🔥 Os dois fizeram: Ander +${aGain} · Lil +${lGain}`;
+      $('#tease').textContent = pick(DATA.messages.win);
+      soundWin();
+      confetti();
+    }else if(type === 'anderQuit'){
+      lGain = Math.max(1, Math.round(base * .4));
+      state.streak = 1;
+      cls = 'partial';
+      text = `Ander desistiu · Lil +${lGain} de coragem`;
+      $('#tease').textContent = pick(DATA.messages.oneQuit);
+      soundPartial();
+    }else if(type === 'lilQuit'){
+      aGain = Math.max(1, Math.round(base * .4));
+      state.streak = 1;
+      cls = 'partial';
+      text = `Lil desistiu · Ander +${aGain} de coragem`;
+      $('#tease').textContent = pick(DATA.messages.oneQuit);
+      soundPartial();
+    }else{
+      state.streak = 1;
+      cls = 'lose';
+      text = 'Os dois desistiram · 0 pontos';
+      $('#tease').textContent = pick(DATA.messages.bothQuit);
+      soundLose();
+    }
+
+    state.scores.ander += aGain;
+    state.scores.lil += lGain;
+    state.history.unshift({at:Date.now(),combo:`${current.a} + ${current.b}`,outcome:type,ander:aGain,lil:lGain});
+    state.history = state.history.slice(0,50);
+
+    $('#lastResult').textContent = text;
+    animateOutcome(cls, aGain, lGain);
+    updateStats();
+    save();
+
+    setTimeout(()=>{ resetRound(); locked = false; },1100);
+  }
+
+  function animateOutcome(cls,aGain,lGain){
+    const stage = $('#gameStage');
+    stage.classList.remove('win','lose','partial');
+    void stage.offsetWidth;
+    stage.classList.add(cls);
+    setTimeout(()=>stage.classList.remove(cls),700);
+    if(aGain) pop($('#anderPoints'));
+    if(lGain) pop($('#lilPoints'));
+  }
+
+  function pop(el){
+    el.classList.remove('score-pop');
+    void el.offsetWidth;
+    el.classList.add('score-pop');
+    setTimeout(()=>el.classList.remove('score-pop'),550);
+  }
+
+  function confetti(){
+    const layer = $('#feedbackLayer');
+    layer.innerHTML = '';
+    for(let i=0;i<16;i++){
+      const s = document.createElement('span');
+      s.className = 'spark';
+      s.style.setProperty('--x', `${Math.round((Math.random()-.5)*280)}px`);
+      s.style.setProperty('--y', `${Math.round(-40-Math.random()*180)}px`);
+      s.style.setProperty('--rot', `${Math.round(Math.random()*180)}deg`);
+      s.style.left = `${42 + Math.random()*16}%`;
+      s.style.top = `${50 + Math.random()*12}%`;
+      layer.appendChild(s);
+    }
+    setTimeout(()=>layer.innerHTML='',850);
+  }
+
+  function resetRound(){
+    current = null;
+    $('#outcomePanel').classList.add('hidden');
+    $('#finishBtn').classList.add('hidden');
+    $('#rollBtn').classList.remove('hidden');
+    $('#wordA').textContent = 'TOQUE';
+    $('#wordB').textContent = 'SURPRESA';
+    $('#challengeTitle').textContent = 'Role o dado para continuar';
+    $('#challengeDesc').textContent = 'A próxima combinação aparece acima. Depois vocês decidem o resultado da rodada.';
+    updateLevel();
   }
 
   function updateStats(){
-    $('#points').textContent=state.points; $('#streak').textContent=`×${state.streak}`; $('#roundSummary').textContent=`${state.rounds} rodadas · ${state.done} feitas · ${state.skipped} trocas`; $('#streakFill').style.width=`${Math.min(100,(state.streak-1)*14)}%`;
-    $('#sessionHint').textContent=state.streak>=5?'Vocês entraram no modo sequência. O multiplicador está alto.':'Complete rodadas em sequência para multiplicar os pontos.';
+    const a = state.scores.ander;
+    const l = state.scores.lil;
+
+    $('#anderPoints').textContent = a;
+    $('#lilPoints').textContent = l;
+    $('#anderRankPts').textContent = a;
+    $('#lilRankPts').textContent = l;
+    $('#rounds').textContent = state.rounds;
+    $('#streak').textContent = `×${state.streak}`;
+
+    const max = Math.max(a,l,1);
+    $('#anderBar').style.width = `${Math.round(a/max*100)}%`;
+    $('#lilBar').style.width = `${Math.round(l/max*100)}%`;
+
+    $('#scoreAnder').classList.toggle('leading',a>l);
+    $('#scoreLil').classList.toggle('leading',l>a);
+
+    if(a===l) $('#leaderText').textContent = 'Empatados';
+    else $('#leaderText').textContent = a>l ? 'Ander na frente' : 'Lil na frente';
+
+    const rankA = a===l ? '#1' : (a>l ? '#1' : '#2');
+    const rankL = a===l ? '#1' : (l>a ? '#1' : '#2');
+    $('#scoreAnder small').textContent = rankA;
+    $('#scoreLil small').textContent = `${rankL} · Maurício`;
   }
-  function startTimers(){
-    clearInterval(sessionTicker); sessionTicker=setInterval(()=>{
-      $('#sessionTime').textContent=formatTime(Date.now()-state.startedAt); const idle=Date.now()-state.lastActionAt; $('#idleTime').textContent=formatTime(idle);
-      const minute=Math.floor(idle/60000); if(minute>=2 && minute!==idleToastMark && minute%2===0){ idleToastMark=minute; toast(pick(DATA.messages.idle)); }
+
+  function startTimer(){
+    clearInterval(timer);
+    timer = setInterval(()=>{
+      $('#sessionTime').textContent = format(Date.now()-state.startedAt);
+      $('#idleTime').textContent = format(Date.now()-state.lastActionAt);
     },1000);
-  }
-
-  function updateCoupleUI(){
-    const [a,b]=state.names; $('#coupleName').textContent=`${a} × ${b}`; $('#avatarOne').textContent=(a[0]||'A').toUpperCase(); $('#avatarTwo').textContent=(b[0]||'P').toUpperCase();
-  }
-
-  function renderBanners(){
-    const all=[...state.userBanners.map((src,i)=>({kicker:'NOSSO BANNER',title:`Imagem ${i+1}`,style:'user-image',src})),...DATA.banners];
-    $('#bannerTrack').innerHTML=all.map((b,i)=>`<div class="banner-slide ${b.style} ${i===state.bannerIndex?'active':''}" ${b.src?`style="background-image:url('${b.src}')"`:''}></div>`).join('');
-    $('#bannerDots').innerHTML=all.map((_,i)=>`<button class="${i===state.bannerIndex?'active':''}" data-banner="${i}" aria-label="Banner ${i+1}"></button>`).join('');
-    $$('#bannerDots button').forEach(btn=>btn.addEventListener('click',()=>setBanner(Number(btn.dataset.banner))));
-    const current=all[state.bannerIndex]||all[0]; $('#bannerKicker').textContent=current.kicker; $('#bannerTitle').textContent=current.title;
-    clearInterval(bannerTimer); bannerTimer=setInterval(()=>setBanner((state.bannerIndex+1)%all.length),30000);
-  }
-  function setBanner(index){
-    const all=[...state.userBanners.map((src,i)=>({kicker:'NOSSO BANNER',title:`Imagem ${i+1}`,style:'user-image',src})),...DATA.banners]; state.bannerIndex=(index+all.length)%all.length; $$('.banner-slide').forEach((el,i)=>el.classList.toggle('active',i===state.bannerIndex)); $$('#bannerDots button').forEach((el,i)=>el.classList.toggle('active',i===state.bannerIndex)); const current=all[state.bannerIndex]; $('#bannerKicker').textContent=current.kicker; $('#bannerTitle').textContent=current.title;
-  }
-
-  function handleNav(panel, button){
-    $$('.bottom-nav button').forEach(x=>x.classList.toggle('nav-active',x===button)); if(panel==='game') return; if(panel==='history') openHistory(); if(panel==='achievements') openAchievements(); if(panel==='profile') openProfile();
-  }
-  function openSheet(title, eyebrow, html){ $('#sheetTitle').textContent=title; $('#sheetEyebrow').textContent=eyebrow; $('#sheetBody').innerHTML=html; $('#sheet').showModal(); }
-  function openHistory(){
-    const rows=state.history.length?state.history.map(h=>`<div class="history-line"><span class="history-bullet"></span><span class="history-copy"><strong>${escapeHtml(h.words)}</strong><small>${escapeHtml(h.title)} · ${new Date(h.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small></span><span class="history-points">${h.points?`+${h.points}`:'troca'}</span></div>`).join(''):'<p class="lead">Nenhuma rodada registrada ainda.</p>';
-    openSheet('Histórico da sessão','MEMÓRIA LOCAL',rows);
-  }
-  function openAchievements(){
-    const rows=DATA.achievements.map(a=>{const unlocked=state.achievements.includes(a.id);return `<div class="achievement-line ${unlocked?'':'locked'}"><span class="achievement-sigil">✦</span><span class="history-copy"><strong>${a.title}</strong><small>${a.desc}</small></span><span>${unlocked?'Liberada':'Bloqueada'}</span></div>`}).join(''); openSheet('Conquistas','PROGRESSO',rows);
-  }
-  function openProfile(){
-    openSheet('Perfil do casal','DOIS LOGINS · UM PERFIL',`
-      <section class="sheet-section"><h3>Identidade</h3><div class="inline-grid"><div class="form-line"><label>Pessoa 1</label><input id="profileOne" value="${escapeHtml(state.names[0])}" maxlength="24"></div><div class="form-line"><label>Pessoa 2</label><input id="profileTwo" value="${escapeHtml(state.names[1])}" maxlength="24"></div></div><button class="sheet-action primary" id="saveProfile">Salvar nomes</button></section>
-      <section class="sheet-section"><h3>Estrutura de conta</h3><p class="lead compact">Nesta versão local, não guardamos senha. O layout já prevê duas contas vinculadas ao mesmo perfil, mas autenticação real deve entrar apenas com backend e hash seguro.</p><div class="inline-grid"><div class="form-line"><label>E-mail 1 (demonstração)</label><input type="email" placeholder="pessoa1@email.com"></div><div class="form-line"><label>E-mail 2 (demonstração)</label><input type="email" placeholder="pessoa2@email.com"></div></div></section>
-      <section class="sheet-section"><h3>Banners do casal</h3><p class="lead compact">Você pode adicionar imagens locais para testar o carrossel. Elas ficam somente neste navegador e podem ocupar bastante espaço.</p><input id="bannerInput" type="file" accept="image/*" multiple hidden><button class="sheet-action" id="pickBanners"><svg style="width:16px;height:16px;vertical-align:-3px;fill:none;stroke:currentColor"><use href="#i-image"></use></svg> Adicionar imagens</button> <button class="sheet-action" id="clearBanners">Limpar imagens</button></section>`);
-    $('#saveProfile').addEventListener('click',()=>{state.names=[$('#profileOne').value.trim()||'Pessoa 1',$('#profileTwo').value.trim()||'Pessoa 2'];updateCoupleUI();persist();toast('Perfil atualizado.');});
-    $('#pickBanners').addEventListener('click',()=>$('#bannerInput').click()); $('#clearBanners').addEventListener('click',()=>{state.userBanners=[];state.bannerIndex=0;persist();renderBanners();toast('Banners locais removidos.');});
-    $('#bannerInput').addEventListener('change',handleBannerFiles);
-  }
-  function handleBannerFiles(e){
-    const files=[...e.target.files].slice(0,4); if(!files.length)return; let remaining=files.length; const loaded=[]; files.forEach(file=>{if(file.size>1_500_000){toast(`${file.name}: imagem grande demais para o modo local.`);if(--remaining===0)finish();return;} const r=new FileReader();r.onload=()=>{loaded.push(r.result);if(--remaining===0)finish();};r.onerror=()=>{if(--remaining===0)finish();};r.readAsDataURL(file);}); function finish(){state.userBanners=[...state.userBanners,...loaded].slice(0,4);persist();renderBanners();toast(`${loaded.length} banner(s) adicionado(s).`);}
-  }
-  function openSettings(){
-    const themeOptions=DATA.themes.map(t=>`<option value="${t.id}" ${state.theme===t.id?'selected':''}>${t.label}</option>`).join(''); const levelOptions=DATA.levels.map(l=>`<option value="${l.id}" ${state.maxLevel===l.id?'selected':''}>${l.label}</option>`).join('');
-    openSheet('Preferências','AJUSTES',`<section class="sheet-section"><h3>Experiência</h3><div class="form-line"><label>Tema</label><select id="settingsTheme">${themeOptions}</select></div><div class="form-line"><label>Intensidade máxima</label><select id="settingsLevel">${levelOptions}</select></div><button class="sheet-action primary" id="saveSettings">Aplicar</button></section><section class="sheet-section"><h3>Dados locais</h3><p class="lead compact">Pontos, histórico e preferências estão no localStorage deste navegador.</p><button class="sheet-action" id="resetSession">Zerar sessão</button> <button class="sheet-action" id="resetEverything">Apagar demo</button></section>`);
-    $('#saveSettings').addEventListener('click',()=>{const nextLevel=$('#settingsLevel').value;if(nextLevel==='hardcore'&&state.maxLevel!=='hardcore'&&!confirm('Confirma 18+ e consentimento para liberar Hardcore?'))return;state.theme=$('#settingsTheme').value;state.maxLevel=nextLevel;document.body.dataset.theme=state.theme;persist();toast('Preferências aplicadas.');});
-    $('#resetSession').addEventListener('click',()=>{state.points=0;state.streak=1;state.rounds=0;state.done=0;state.skipped=0;state.history=[];state.achievements=[];state.startedAt=Date.now();state.lastActionAt=Date.now();persist();updateStats();$('#sheet').close();toast('Sessão zerada.');});
-    $('#resetEverything').addEventListener('click',()=>{if(confirm('Apagar toda a demonstração local e voltar ao início?')){localStorage.removeItem(storeKey);location.reload();}});
-  }
-
-  function checkAchievements(){
-    DATA.achievements.forEach(a=>{if(state.achievements.includes(a.id))return; const value=a.type==='done'?state.done:a.type==='streak'?state.streak:state.points; if(value>=a.threshold){state.achievements.push(a.id);persist();toast(`Conquista: ${a.title} ✦`);}});
-  }
-  function playTone(freq=220,duration=.06,volume=.05){
-    if(!state.sound)return; try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.frequency.value=freq;osc.type='sine';gain.gain.setValueAtTime(volume,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+duration);osc.onended=()=>ctx.close();}catch{}
   }
 
   init();
