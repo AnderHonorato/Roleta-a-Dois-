@@ -17,6 +17,7 @@ export type Category =
   | 'posicao'
   | 'jogo'
   | 'controle'
+  | 'provocacao'
   | 'surpresa';
 
 export interface Challenge {

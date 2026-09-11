@@ -1,0 +1,151 @@
+/* ===========================================================
+   Atmosfera permanente.
+
+   Regra que nao se quebra aqui: esta camada nunca recebe toque e
+   nunca cobre conteudo. Fica no fundo da pilha, sem interacao, e
+   todo o movimento e transform/opacity - composto na GPU, sem
+   custo na thread principal.
+   =========================================================== */
+
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 1; /* acima do .field, abaixo de todo o conteudo */
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+/* --- veus de luz que respiram devagar --- */
+.ambience__veu {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform, opacity;
+}
+
+.ambience__veu--a {
+  width: 70vmax;
+  height: 70vmax;
+  top: -28vmax;
+  left: -22vmax;
+  background: radial-gradient(circle, var(--glow) 0%, transparent 68%);
+  opacity: 0.5;
+  animation: veu-a 34s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.ambience__veu--b {
+  width: 62vmax;
+  height: 62vmax;
+  right: -24vmax;
+  bottom: -26vmax;
+  background: radial-gradient(circle, var(--glow-2) 0%, transparent 68%);
+  opacity: 0.42;
+  animation: veu-b 44s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes veu-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0.42; }
+  35%  { transform: translate3d(7vw, 5vh, 0) scale(1.16); opacity: 0.6; }
+  68%  { transform: translate3d(3vw, 10vh, 0) scale(1.04); opacity: 0.46; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.42; }
+}
+
+@keyframes veu-b {
+  0%   { transform: translate3d(0, 0, 0) scale(1.05); opacity: 0.36; }
+  40%  { transform: translate3d(-8vw, -6vh, 0) scale(1); opacity: 0.54; }
+  72%  { transform: translate3d(-3vw, -11vh, 0) scale(1.12); opacity: 0.4; }
+  100% { transform: translate3d(0, 0, 0) scale(1.05); opacity: 0.36; }
+}
+
+/* --- brasas subindo --- */
+.ambience__brasas {
+  position: absolute;
+  inset: 0;
+}
+
+.ambience__brasa {
+  position: absolute;
+  bottom: -6vh;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: brasa-sobe;
+  animation-timing-function: cubic-bezier(0.35, 0, 0.5, 1);
+  animation-iteration-count: infinite;
+}
+
+@keyframes brasa-sobe {
+  0% {
+    transform: translate3d(0, 0, 0) scale(var(--escala, 1));
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--opacidade, 0.3);
+  }
+  /* a deriva entra no meio do trajeto: da a sensacao de ar quente */
+  55% {
+    transform: translate3d(calc(var(--deriva, 0px) * 0.6), -55vh, 0)
+      scale(calc(var(--escala, 1) * 0.85));
+    opacity: var(--opacidade, 0.3);
+  }
+  88% {
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(var(--deriva, 0px), -108vh, 0) scale(calc(var(--escala, 1) * 0.5));
+    opacity: 0;
+  }
+}
+
+/* --- grao fino, para a tela nunca ficar "lisa" demais --- */
+.ambience__grao {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23g)'/></svg>");
+  animation: grao-vive 7s steps(4) infinite;
+}
+
+@keyframes grao-vive {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25%      { transform: translate3d(-2%, 1%, 0); }
+  50%      { transform: translate3d(1%, -2%, 0); }
+  75%      { transform: translate3d(2%, 2%, 0); }
+}
+
+/* --- em jogo, a atmosfera esquenta --- */
+.ambience.is-intense .ambience__veu {
+  animation-duration: 18s;
+  opacity: 0.72;
+}
+.ambience.is-intense .ambience__brasa {
+  animation-duration: 9s !important;
+}
+
+/* --- versao sem movimento: so o gradiente, nada animado --- */
+.ambience--still {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 60vmax at 12% 8%, var(--glow) 0%, transparent 62%),
+    radial-gradient(55vmax 55vmax at 88% 92%, var(--glow-2) 0%, transparent 62%);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambience__veu,
+  .ambience__brasa,
+  .ambience__grao {
+    animation: none;
+  }
+  .ambience__brasa {
+    opacity: 0;
+  }
+}

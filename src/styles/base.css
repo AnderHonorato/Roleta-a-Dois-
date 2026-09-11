@@ -40,6 +40,7 @@ body {
 /* --- shell --- */
 .shell {
   position: relative;
+  /* acima da atmosfera (z-index 1), que e puramente decorativa */
   z-index: var(--layer-content);
   min-height: 100%;
   display: flex;

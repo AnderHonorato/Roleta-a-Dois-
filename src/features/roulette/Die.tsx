@@ -62,7 +62,7 @@ export function Die({
   face,
   rolling,
   reducedMotion,
-  rollMs = 1700,
+  rollMs = 2800,
   disabled = false,
   inviting = true,
   onRoll,
@@ -70,13 +70,22 @@ export function Die({
 }: DieProps) {
   // Voltas extras acumuladas: cada arremesso gira mais, nunca volta.
   const turns = useRef({ x: 0, y: 0 });
+  // Cada arremesso ganha uma trajetoria propria - altura, inclinacao da
+  // queda e giro no proprio eixo. Sem isso dois arremessos seguidos sao
+  // visivelmente identicos, e o dado deixa de parecer solto na mesa.
+  const arremesso = useRef({ altura: 1, deriva: 0, rodopio: 0 });
   const [, force] = useState(0);
 
   useEffect(() => {
     if (!rolling || reducedMotion) return;
     turns.current = {
-      x: turns.current.x + 2 + Math.floor(Math.random() * 2),
-      y: turns.current.y + 3 + Math.floor(Math.random() * 3),
+      x: turns.current.x + 3 + Math.floor(Math.random() * 4),
+      y: turns.current.y + 4 + Math.floor(Math.random() * 5),
+    };
+    arremesso.current = {
+      altura: 0.82 + Math.random() * 0.5,
+      deriva: (Math.random() - 0.5) * 54,
+      rodopio: (Math.random() - 0.5) * 26,
     };
     force((n) => n + 1);
   }, [rolling, reducedMotion]);
@@ -100,7 +109,12 @@ export function Die({
         className={`die-lift${rolling && !reducedMotion ? ' is-rolling' : ''}${
           !rolling && !reducedMotion ? ' is-resting' : ''
         }`}
-        style={{ ['--roll-ms' as string]: `${duration}ms` }}
+        style={{
+          ['--roll-ms' as string]: `${duration}ms`,
+          ['--altura' as string]: String(arremesso.current.altura),
+          ['--deriva' as string]: `${arremesso.current.deriva}px`,
+          ['--rodopio' as string]: `${arremesso.current.rodopio}deg`,
+        }}
       >
         {/* Camada de camera: inclina a cena para que a face sorteada
             fique legivel de frente sem perder o volume do cubo. */}
@@ -124,7 +138,11 @@ export function Die({
 
       <span
         className={`die-shadow${rolling && !reducedMotion ? ' is-rolling' : ''}`}
-        style={{ ['--roll-ms' as string]: `${duration}ms` }}
+        style={{
+          ['--roll-ms' as string]: `${duration}ms`,
+          // Mesma deriva do corpo: sem isto a sombra fica para tras.
+          ['--deriva' as string]: `${arremesso.current.deriva}px`,
+        }}
         aria-hidden="true"
       />
 

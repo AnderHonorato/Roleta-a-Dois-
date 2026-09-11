@@ -6,6 +6,7 @@ import { Icon } from '@/design-system/icons/Icons';
 import { useStore } from '@/app/store';
 import { buildDemoState } from '@/services/demoSeed';
 import { MODO_DEMO_LOCAL, APP_NAME } from '@/services/config';
+import { hojeISO, verificarMaioridade, IDADE_MINIMA } from '@/lib/age';
 import { Wordmark } from '@/design-system/svg/Wordmark';
 import { AuthPanel } from '@/features/auth/AuthPanel';
 
@@ -21,6 +22,8 @@ type Step = 'gate' | 'audience' | 'level' | 'entry';
 export function Onboarding() {
   const { state, dispatch, logActivity } = useStore();
   const [step, setStep] = useState<Step>(state.ageConfirmed ? 'audience' : 'gate');
+  const [nascimento, setNascimento] = useState('');
+  const [erroIdade, setErroIdade] = useState<string | null>(null);
   const [isAdult, setIsAdult] = useState(state.ageConfirmed);
   const [consent, setConsent] = useState(state.ageConfirmed);
   const [audience, setAudience] = useState<Audience>(state.couple?.theme ?? 'neutral');
@@ -82,19 +85,43 @@ export function Onboarding() {
           </p>
 
           <div className="onb__checks">
-            <label className="check">
+            <div className="field-group birth">
+              <label className="label" htmlFor="onb-birth">
+                Sua data de nascimento
+              </label>
               <input
-                type="checkbox"
-                checked={isAdult}
-                onChange={(event) => setIsAdult(event.target.checked)}
+                id="onb-birth"
+                type="date"
+                className="input"
+                value={nascimento}
+                max={hojeISO()}
+                autoComplete="bday"
+                aria-invalid={erroIdade !== null}
+                aria-describedby={erroIdade ? 'onb-birth-erro' : 'onb-birth-ajuda'}
+                onChange={(event) => {
+                  const valor = event.target.value;
+                  setNascimento(valor);
+                  if (!valor) {
+                    setErroIdade(null);
+                    setIsAdult(false);
+                    return;
+                  }
+                  const check = verificarMaioridade(valor);
+                  setIsAdult(check.ok);
+                  setErroIdade(check.ok ? null : check.motivo);
+                }}
               />
-              <span className="check__box">
-                <Icon name="check" size={15} />
-              </span>
-              <span className="check__text">
-                Tenho 18 anos ou mais e a outra pessoa tambem.
-              </span>
-            </label>
+              {erroIdade ? (
+                <p id="onb-birth-erro" className="error-text" role="alert">
+                  {erroIdade}
+                </p>
+              ) : (
+                <p id="onb-birth-ajuda" className="help-text">
+                  Usada so para confirmar que voce tem {IDADE_MINIMA} anos ou mais. Nao fica salva
+                  em lugar nenhum.
+                </p>
+              )}
+            </div>
 
             <label className="check">
               <input
@@ -106,8 +133,8 @@ export function Onboarding() {
                 <Icon name="check" size={15} />
               </span>
               <span className="check__text">
-                Entendi que qualquer pessoa pode dizer nao, a qualquer momento, sem explicacao. Vamos
-                combinar uma palavra de parada.
+                A outra pessoa tambem e maior de {IDADE_MINIMA}, e entendemos que qualquer um pode
+                dizer nao a qualquer momento, sem explicacao. Vamos combinar uma palavra de parada.
               </span>
             </label>
           </div>

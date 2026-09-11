@@ -61,6 +61,7 @@ export const CATEGORIES: Record<Category, string> = {
   posicao: 'Posicao',
   jogo: 'Jogo',
   controle: 'Controle',
+  provocacao: 'Provocacao',
   surpresa: 'Surpresa',
 };
 

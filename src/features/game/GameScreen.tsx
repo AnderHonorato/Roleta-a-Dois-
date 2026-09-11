@@ -8,6 +8,7 @@ import { getAudience } from '@/data/audiences';
 import { getAchievement } from '@/data/achievements';
 import { useStore } from '@/app/store';
 import { useCountdown } from '@/hooks/useSessionTimer';
+import { PoseArt } from '@/design-system/svg/PoseArt';
 import { Die } from '../roulette/Die';
 import { useGame } from './GameProvider';
 import type { Route } from '@/app/router';
@@ -115,6 +116,7 @@ export function GameScreen({ navigate }: { navigate: (route: Route) => void }) {
           face={game.face}
           rolling={game.phase === 'rolling'}
           reducedMotion={game.reducedMotion}
+          rollMs={game.rollMs}
           disabled={game.phase === 'revealed'}
           inviting={game.phase === 'idle'}
           onRoll={game.roll}
@@ -151,6 +153,14 @@ export function GameScreen({ navigate }: { navigate: (route: Route) => void }) {
           aria-label="Desafio sorteado"
           ref={revealRef}
         >
+          {/* Ilustracao da execucao: silhuetas desenhadas, com os
+              corpos do perfil escolhido e a composicao da categoria. */}
+          <PoseArt
+            audience={couple.theme}
+            category={game.current.category}
+            className={`pose--reveal${game.reducedMotion ? '' : ' pose--viva'}`}
+          />
+
           <div className="reveal__meta">
             <span className="pill pill--accent">{LEVELS[game.current.level].label}</span>
             <span className="pill">{CATEGORIES[game.current.category]}</span>

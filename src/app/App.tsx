@@ -13,6 +13,8 @@ import { SettingsScreen } from '@/features/settings/SettingsScreen';
 import { PrivacyScreen } from '@/features/settings/PrivacyScreen';
 import { AuthPanel } from '@/features/auth/AuthPanel';
 import { SHOW_DEMO_BADGE } from '@/services/config';
+import { Ambience } from '@/design-system/motion/Ambience';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStore } from './store';
 import { useRoute, type Route } from './router';
 import { Splash } from './Splash';
@@ -28,6 +30,7 @@ const NAV: Array<{ route: Route; label: string; icon: IconName }> = [
 export function App() {
   const { state, booted, bootError, saveStatus, saveError, online, retrySave, theme } = useStore();
   const [route, navigate] = useRoute();
+  const reducedMotion = useReducedMotion(state.couple?.preferences.reducedMotion ?? null);
 
   // O tema do casal e a fonte de verdade do data-theme.
   useEffect(() => {
@@ -42,6 +45,10 @@ export function App() {
         <span className="field__aura field__aura--a" />
         <span className="field__aura field__aura--b" />
       </div>
+
+      {/* Atmosfera permanente: fica sempre na tela, atras de tudo, e
+          nunca intercepta toque (pointer-events: none). */}
+      <Ambience reducedMotion={reducedMotion} />
 
       <Splash done={booted} />
 

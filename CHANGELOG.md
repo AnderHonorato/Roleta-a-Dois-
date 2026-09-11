@@ -2,6 +2,28 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [1.2.0] — 2026-09-11
+
+### Adicionado
+- **Porta 18+ com data de nascimento**: o checkbox virou campo de data com cálculo real de idade, recusando futuro, data inexistente (31/02), ano implausível e menor de idade. A data NÃO é persistida — só a confirmação (11 testes cobrem a regra).
+- **Ilustrações de execução** (`PoseArt`): silhuetas desenhadas em SVG, com os corpos do perfil do casal (incluindo casal gay) e a composição escolhida pela categoria do desafio. Sem arquivo de imagem: herdam a paleta do tema.
+- **Atmosfera permanente** (`Ambience`): véus de luz que respiram e brasas subindo, sempre na tela, atrás de tudo e sem interceptar toque.
+- **Trilha sonora** sintetizada por Web Audio: baixo pulsante a 68 BPM, pad de duas vozes e ar no contratempo. Entra no primeiro arremesso e sai por fade quando a sessão encerra.
+- **Peça por tema**: no tema gay o dado vira uma brasa (pedra escura, veios incandescentes pulsando, pips de fogo). Couro e brasa no hetero, acetinado no lésbico, cristal no bi, holográfico no queer.
+- 19 desafios novos (94 no total), incluindo a categoria `provocacao`.
+
+### Alterado
+- **Hardcore reescrito**: 22 itens (era 15), com linguagem direta e cenas longas. Todo item com risco físico agora traz orientação de segurança específica, não genérica.
+- **Física do arremesso**: duração sorteada entre 2,5s e 3,4s (era fixa em 1,7s), com altura, deriva lateral e rodopio próprios a cada lance. Os quiques decaem em amplitude e se aproximam no fim, e o giro tem cauda longa depois do impacto.
+- **Paleta sonora** trocada de bipes para sons com corpo: batimento cardíaco grave na revelação, ar, pele e tecido.
+
+### Corrigido
+- A ilustração não aparecia: `url(#id)` dentro de custom property não resolve de forma confiável — as figuras passaram a usar cor sólida dos tokens.
+- A ilustração ficava fora de vista: `height:auto` com `max-height` faz o SVG assumir a altura intrínseca e apenas cortar a caixa. Agora a altura é explícita.
+
+### Notas
+- As poses deitadas foram retiradas: a `Figura` é construída na vertical e elas saíam flutuando fora do chão. Ficaram as quatro composições em pé, que o sistema desenha bem.
+
 ## [1.1.0] — 2026-09-11
 
 ### Adicionado

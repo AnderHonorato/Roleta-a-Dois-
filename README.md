@@ -51,7 +51,10 @@ O produto assume adultos que consentem, com palavra de parada combinada. O níve
 ## Funcionalidades
 
 **Jogo**
-- Dado de seis faces em 2.5D (CSS 3D transforms, sem WebGL): sobe, gira, desacelera, cai e quica.
+- Peça de seis faces em 2.5D (CSS 3D transforms, sem WebGL): sobe, deriva, gira, desacelera, cai e quica até assentar. Altura, deriva, rodopio e duração (2,5–3,4s) são sorteados a cada lance, então dois arremessos nunca são iguais.
+- A peça muda de **material** conforme o tema — no tema gay ela é uma brasa: pedra escura com veios incandescentes e pips de fogo.
+- Ilustração de execução em cada resultado: silhuetas desenhadas em SVG, com os corpos do perfil do casal e a composição da categoria.
+- Atmosfera permanente na tela (véus de luz e brasas subindo), que nunca intercepta toque.
 - Sorteio com memória curta — evita repetir os 8 últimos desafios.
 - Pontuação com base do nível, multiplicador de sequência (x1 → x1,5 → x2 → x3), bônus por cumprir a duração e desconto por repetição.
 - Cronômetro por desafio (opcional) e cronômetro de sessão.
@@ -70,6 +73,7 @@ O produto assume adultos que consentem, com palavra de parada combinada. O níve
 - Troca automática a cada 30 segundos (ajustável de 5s a 120s), swipe no mobile, setas discretas no desktop, indicadores, lazy loading e crop por `object-fit: cover`.
 
 **Interface**
+- Trilha sonora sintetizada que entra no primeiro arremesso e sai quando a sessão encerra, mais efeitos graves (batimento, respiração, pele, tecido) — nenhum arquivo de áudio no bundle.
 - 6 temas completos — cada um muda paleta, campo de fundo, textura, glow, raio de canto, inclinação dos ornamentos, peso tipográfico e vocabulário.
 - Ícones autorais em SVG (28 ícones na mesma grade). Emoji só dentro de texto, nunca como elemento estrutural.
 - Composição editorial: faixas, trilhos horizontais, painéis, divisórias e tipografia grande — sem grid de cards.
@@ -344,13 +348,14 @@ docs/                      arquitetura, privacidade, screenshots
 
 ## Testes
 
-**76 testes automatizados**, em 6 arquivos:
+**87 testes automatizados**, em 7 arquivos:
 
 - `scoring.test.ts` — multiplicadores, bônus de tempo, penalidade de repetição, piso de 1 ponto, penalidade de troca.
 - `challenges.test.ts` — ids únicos, integridade dos campos, teto de nível, exclusão de categoria, cobertura por perfil.
 - `core.test.ts` — mensagens sem repetição, sorteio com memória, formatação, saneamento, validação de senha, regras de conquista.
 - `auth.test.ts` — PBKDF2, salts distintos, verificação, login genérico, troca e redefinição de senha.
 - `storage.test.ts` — gravação, leitura, estado corrompido, migração de versão, limpeza.
+- `age.test.ts` — cálculo de idade, virada de aniversário, datas inexistentes (31/02), futuro e formato inválido.
 - `idbStorage.test.ts` — IndexedDB: gravação, leitura, `clear`, migração vinda do `localStorage`, proteção contra sobrescrever estado real, e queda para o plano B quando o IndexedDB não existe.
 
 **Verificação manual em navegador** (Chromium via Playwright), já executada nesta entrega:

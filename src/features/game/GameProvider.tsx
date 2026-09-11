@@ -49,6 +49,8 @@ export interface GameValue {
   idleMessage: string | null;
   poolSize: number;
   challengeEndsAt: number | null;
+  /** Duracao do arremesso atual, em ms. Muda a cada lance. */
+  rollMs: number;
   reducedMotion: boolean;
   soundEnabled: boolean;
   roll: () => void;
@@ -63,7 +65,12 @@ export interface GameValue {
 
 const GameContext = createContext<GameValue | null>(null);
 
-const ROLL_MS = 1700;
+/**
+ * Duracao do arremesso. Sorteada a cada lance: com tempo fixo o olho
+ * aprende quando o dado vai parar e a expectativa morre.
+ */
+const ROLL_MS_MIN = 2500;
+const ROLL_MS_MAX = 3400;
 const IDLE_THRESHOLD = 90_000;
 const RECENT_MEMORY = 8;
 
@@ -73,7 +80,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const preferences = couple?.preferences;
 
   const reducedMotion = useReducedMotion(preferences?.reducedMotion ?? null);
-  const { play, unlock } = useSound(preferences?.soundEnabled ?? true, preferences?.volume ?? 0.5);
+  const { play, unlock, startMusic, stopMusic } = useSound(
+    preferences?.soundEnabled ?? true,
+    preferences?.volume ?? 0.5,
+  );
 
   const [phase, setPhase] = useState<GamePhase>('idle');
   const [current, setCurrent] = useState<Challenge | null>(null);
@@ -87,6 +97,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [challengeEndsAt, setChallengeEndsAt] = useState<number | null>(null);
   const [roundId, setRoundId] = useState<string | null>(null);
   const [idleMessage, setIdleMessage] = useState<string | null>(null);
+  const [rollMs, setRollMs] = useState(ROLL_MS_MIN);
 
   const recentIds = useRef<string[]>([]);
   const seenCounts = useRef<Map<string, number>>(new Map());
@@ -160,6 +171,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const endSession = useCallback(() => {
     if (!sessionId) return;
+    stopMusic();
     dispatch({ type: 'patchSession', sessionId, patch: { endedAt: Date.now() } });
     logActivity('session_end', 'Sessao encerrada', `${sessionPoints} pontos`);
     setMessage(getMessage('sessionEnd', couple?.theme ?? 'neutral'));
@@ -167,7 +179,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setPhase('idle');
     setCurrent(null);
     setChallengeEndsAt(null);
-  }, [sessionId, dispatch, logActivity, sessionPoints, couple?.theme]);
+  }, [sessionId, dispatch, logActivity, sessionPoints, couple?.theme, stopMusic]);
 
   // --- conquistas ---
   const runAchievements = useCallback(
@@ -202,9 +214,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setChallengeEndsAt(null);
     setMessage(getMessage('rolling', couple.theme, message));
     playSound('roll');
+    // A trilha entra com o primeiro arremesso e so sai quando a sessao
+    // encerra - ela marca "estamos jogando", nao cada rodada.
+    startMusic();
 
     const picked = pickWeighted(pool, recentIds.current, (item) => item.id);
     setFace(randomInt(1, 6) as DieFace);
+    const duracao = randomInt(ROLL_MS_MIN, ROLL_MS_MAX);
+    setRollMs(duracao);
 
     const settle = () => {
       if (!picked) {
@@ -222,6 +239,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setPhase('revealed');
       setMessage(getMessage('revealed', couple.theme, message));
       playSound('reveal');
+      window.setTimeout(() => playSound('heartbeat'), 380);
 
       if (preferences?.timerEnabled && picked.durationSec > 0) {
         setChallengeEndsAt(Date.now() + picked.durationSec * 1000);
@@ -249,7 +267,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (reducedMotion) {
       settle();
     } else {
-      rollTimer.current = window.setTimeout(settle, ROLL_MS);
+      rollTimer.current = window.setTimeout(settle, duracao);
     }
   }, [
     couple,
@@ -263,13 +281,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch,
     streak,
     resetIdle,
+    startMusic,
   ]);
 
   useEffect(
     () => () => {
       if (rollTimer.current) window.clearTimeout(rollTimer.current);
+      stopMusic();
     },
-    [],
+    [stopMusic],
   );
 
   // --- confirmar ("Fizemos") ---
@@ -485,6 +505,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     idleMessage,
     poolSize: pool.length,
     challengeEndsAt,
+    rollMs,
     reducedMotion,
     soundEnabled: preferences?.soundEnabled ?? true,
     roll,
