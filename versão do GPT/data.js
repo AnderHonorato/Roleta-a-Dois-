@@ -1,55 +1,36 @@
 window.ROULETTE_DATA = {
-  themes: [
-    { id: 'gay', label: 'Gay', tagline: 'Contraste elétrico, violeta e calor.', accent: '#9b7cff' },
-    { id: 'lesbian', label: 'Lésbico', tagline: 'Magenta queimado, âmbar e vinho.', accent: '#ff718d' },
-    { id: 'hetero', label: 'Hétero', tagline: 'Cobre, cereja e azul profundo.', accent: '#ff7c5b' },
-    { id: 'bi', label: 'Bi', tagline: 'Rosa, violeta e azul em camadas.', accent: '#8f77ff' },
-    { id: 'queer', label: 'Queer', tagline: 'Editorial, mutável e sem caixinhas.', accent: '#e7ff6b' },
-    { id: 'neutral', label: 'Livre', tagline: 'Minimalista, quente e neutro.', accent: '#f6c879' }
-  ],
   levels: [
-    { id: 'leve', label: 'Leve', score: 10, note: 'Provoca sem acelerar demais.' },
-    { id: 'quente', label: 'Quente', score: 20, note: 'Mais direto, ainda confortável.' },
-    { id: 'intenso', label: 'Intenso', score: 35, note: 'Para quem já entrou no clima.' },
-    { id: 'hardcore', label: 'Hardcore', score: 50, note: 'Só aparece com confirmação extra.' }
+    { id:'leve', label:'Leve', score:10, note:'Provoca sem acelerar demais.' },
+    { id:'quente', label:'Quente', score:20, note:'Mais direto, ainda confortável.' },
+    { id:'intenso', label:'Intenso', score:35, note:'Para quando o clima já subiu.' },
+    { id:'hardcore', label:'Hardcore', score:50, note:'Mais ousado, sempre com consentimento.' }
   ],
   challenges: [
-    { level:'leve', left:'BEIJO', right:'DEMORADO', title:'Sem cronômetro emocional', desc:'Um beijo longo, sem pressa e sem transformar em competição.', tags:['romance','aquecimento'] },
-    { level:'leve', left:'MASSAGEM', right:'LENTA', title:'Mãos ocupadas', desc:'Escolham quem começa. O resto da rodada é só atenção e provocação.', tags:['toque'] },
-    { level:'leve', left:'OLHAR', right:'SEM FUGIR', title:'Duelo silencioso', desc:'Fiquem frente a frente e segurem o olhar até alguém quebrar a pose.', tags:['jogo'] },
-    { level:'leve', left:'COLO', right:'PERTINHO', title:'Distância mínima', desc:'Uma rodada para ficar colado, conversar baixo e deixar a tensão trabalhar.', tags:['proximidade'] },
-    { level:'quente', left:'POR CIMA', right:'DEVAGAR', title:'Vocês controlam o ritmo', desc:'Escolham uma posição confortável com uma pessoa conduzindo o ritmo. Consentimento sempre pode mudar no meio.', tags:['posição'] },
-    { level:'quente', left:'DE LADO', right:'COLADOS', title:'Pouco espaço entre vocês', desc:'A ideia é proximidade e ritmo tranquilo. Ajustem até ficar bom para os dois.', tags:['posição'] },
-    { level:'quente', left:'NO COLO', right:'SEM PRESSA', title:'A cadeira virou cúmplice', desc:'Use uma cadeira ou sofá firme e escolham quem conduz a aproximação.', tags:['posição'] },
-    { level:'quente', left:'BEIJO', right:'PROIBIDO PARAR', title:'Só vale interromper para rir', desc:'Comecem devagar e deixem a rodada terminar quando vocês quiserem.', tags:['beijo'] },
-    { level:'quente', left:'MÃOS', right:'LIVRES', title:'Improviso autorizado', desc:'Um guia o outro apenas com as mãos e sinais. Se algo não agradar, troquem na hora.', tags:['toque'] },
-    { level:'intenso', left:'PAREDE', right:'APOIO', title:'Mudem o cenário', desc:'Escolham uma variação em pé, com apoio estável, sem pressa e sem forçar equilíbrio.', tags:['posição'] },
-    { level:'intenso', left:'ESPELHO', right:'DE FRENTE', title:'A cena muda quando vocês olham', desc:'Escolham uma posição confortável perto de um espelho e alternem quem conduz.', tags:['posição'] },
-    { level:'intenso', left:'RITMO', right:'ALTERNADO', title:'Troca de comando', desc:'A cada minuto, troquem quem define o ritmo e o próximo movimento.', tags:['jogo','ritmo'] },
-    { level:'intenso', left:'SOFÁ', right:'SEM ROTINA', title:'Nada de piloto automático', desc:'Inventem uma variação nova usando o sofá como apoio e parem se algo ficar desconfortável.', tags:['posição'] },
-    { level:'intenso', left:'VENDA', right:'CONFIANÇA', title:'Só com combinado claro', desc:'Uma pessoa fecha os olhos; a outra guia toques leves. Palavra de pausa combinada antes.', tags:['sensorial'] },
-    { level:'hardcore', left:'COMANDO', right:'ALTERNADO', title:'Intensidade com limite claro', desc:'Definam uma palavra de pausa e alternem quem conduz a rodada. Nada vale mais que o conforto dos dois.', tags:['controle'] },
-    { level:'hardcore', left:'DESAFIO', right:'SEM ROTINA', title:'Improviso mais ousado', desc:'Escolham juntos uma variação mais intensa que ambos já tenham vontade de experimentar.', tags:['desafio'] },
-    { level:'hardcore', left:'RITMO', right:'MÁXIMO', title:'Só até onde continua bom', desc:'Aumentem a intensidade gradualmente e parem antes de desconforto virar obrigação.', tags:['ritmo'] },
-    { level:'hardcore', left:'CENÁRIO', right:'NOVO', title:'Quebrem o roteiro', desc:'Escolham outro cômodo ou apoio seguro e inventem uma rodada completamente diferente.', tags:['desafio'] }
+    { level:'leve', a:'BEIJO', b:'LENTO', title:'Sem pressa nenhuma', desc:'Um beijo demorado e tranquilo. Vocês decidem quando termina.' },
+    { level:'leve', a:'OLHAR', b:'DESAFIO', title:'Quem desvia primeiro?', desc:'Fiquem frente a frente e segurem o olhar até alguém quebrar a pose.' },
+    { level:'leve', a:'COLO', b:'PROVOCAÇÃO', title:'Distância mínima', desc:'Fiquem bem próximos e deixem a tensão trabalhar por alguns instantes.' },
+    { level:'leve', a:'MASSAGEM', b:'VONTADE', title:'Mãos ocupadas', desc:'Escolham quem começa e façam uma massagem caprichada em uma região confortável.' },
+
+    { level:'quente', a:'COLO', b:'RITMO', title:'Um conduz, o outro acompanha', desc:'Escolham quem começa conduzindo a aproximação e troquem quando quiserem.' },
+    { level:'quente', a:'ESPELHO', b:'PROVOCAÇÃO', title:'A cena muda quando vocês olham', desc:'Fiquem diante de um espelho e alternem quem toma a iniciativa.' },
+    { level:'quente', a:'MÃOS', b:'GUIA', title:'Sem explicar demais', desc:'Um conduz o outro com as mãos e sinais. Qualquer desconforto encerra a rodada.' },
+    { level:'quente', a:'SOFÁ', b:'IMPROVISO', title:'Nada de piloto automático', desc:'Usem o sofá como apoio e inventem uma variação confortável para os dois.' },
+    { level:'quente', a:'BEIJO', b:'INTENSO', title:'Agora sem economia', desc:'Comecem devagar e aumentem o ritmo apenas enquanto estiver bom para os dois.' },
+
+    { level:'intenso', a:'PAREDE', b:'PEGADA', title:'Mudem o cenário', desc:'Escolham uma variação em pé com apoio estável e sem forçar equilíbrio.' },
+    { level:'intenso', a:'VENDA', b:'CONFIANÇA', title:'Só com combinado claro', desc:'Uma pessoa fecha os olhos enquanto a outra conduz toques leves e seguros.' },
+    { level:'intenso', a:'DOMÍNIO', b:'TROCA', title:'O comando muda', desc:'Uma pessoa conduz por um tempo curto e depois vocês invertem os papéis.' },
+    { level:'intenso', a:'RITMO', b:'ALTERNADO', title:'Troca de comando', desc:'Alternem quem decide o ritmo da rodada. Sem obrigação de manter intensidade.' },
+
+    { level:'hardcore', a:'COMANDO', b:'INTENSO', title:'Limite combinado', desc:'Definam antes uma palavra de pausa e mantenham o controle compartilhado da rodada.' },
+    { level:'hardcore', a:'CENÁRIO', b:'OUSADIA', title:'Quebrem o roteiro', desc:'Escolham um ambiente seguro diferente e criem juntos uma rodada mais ousada.' },
+    { level:'hardcore', a:'RITMO', b:'MÁXIMO', title:'Só enquanto continuar bom', desc:'Aumentem a intensidade gradualmente e parem assim que qualquer um quiser.' }
   ],
   messages: {
-    start: ['A primeira rodada sempre parece inocente.','Vocês vieram jogar ou só testar a interface? 👀','O dado não julga. Só expõe a coragem.'],
-    rolled: ['Agora ficou difícil fingir que não viram.','O acaso falou. Vocês negociam o resto.','Essa combinação veio com segundas intenções.','A roleta fez a parte dela. 👀'],
-    done: ['Confirmado. E a pontuação gostou disso. 🔥','Vocês estão ficando perigosamente eficientes.','Mais uma para o histórico da madrugada.','A sequência subiu. O clima também.'],
-    skipped: ['Tá bom… vamos fingir que essa nunca apareceu.','Covardia detectada. Próxima 😏','Essa assustou vocês? O dado anotou.','Pulou? A próxima pode vir pior.'],
-    idle: ['Vocês estão ocupados demais para clicar? 👀','Silêncio suspeito por aqui…','A roleta continua esperando. Sem julgamentos.','Já faz um tempo. Acho que o jogo perdeu a prioridade.'],
-    achievement: ['Isso mereceu uma conquista.','Novo marco desbloqueado. Bonito de ver.','A noite acabou de ganhar um selo novo.']
-  },
-  banners: [
-    { kicker:'SEM PRESSA', title:'Hoje a roleta decide.', style:'ember' },
-    { kicker:'SEQUÊNCIA', title:'Quanto mais vocês fazem, mais vale.', style:'violet' },
-    { kicker:'SEM ROTEIRO', title:'Troquem o previsível por uma rodada nova.', style:'noir' }
-  ],
-  achievements: [
-    { id:'first', title:'Primeira Faísca', desc:'Concluir a primeira rodada.', threshold:1, type:'done' },
-    { id:'five', title:'Sem Freio', desc:'Chegar a 5 confirmações.', threshold:5, type:'done' },
-    { id:'streak5', title:'Embalados', desc:'Alcançar sequência ×5.', threshold:5, type:'streak' },
-    { id:'points200', title:'Noite Pontuada', desc:'Passar de 200 pontos.', threshold:200, type:'points' }
-  ]
+    rolled: ['O dado escolheu. Agora a coragem é de vocês.','Essa combinação veio com intenção.','O acaso falou. Vocês negociam o resto.','Hmm… isso ficou interessante.'],
+    win: ['Boa. Os dois levaram os pontos. 🔥','Rodada concluída. O ranking sentiu.','Os dois encararam. Sequência mantida.','Vitória do casal — e pontos individuais também.'],
+    oneQuit: ['Um desistiu. O outro ainda leva pontos de coragem.','Teve desistência individual. O ranking vai lembrar.','Um pulou fora, o outro segurou a rodada.'],
+    bothQuit: ['Os dois desistiram. Zero pontos e próxima.','Empate na covardia 😏','Essa ficou para outra noite.'],
+    idle: ['Silêncio suspeito por aqui…','Vocês estão ocupados demais para clicar? 👀','O dado ainda está esperando.']
+  }
 };
