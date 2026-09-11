@@ -5,12 +5,12 @@
  * string com cara de credencial num arquivo versionado dispara
  * scanner de segredo (GitGuardian e afins) e vira ruido recorrente no
  * CI. Nenhum destes valores da acesso a coisa alguma - existem so
- * para exercitar checkPassword, createUser e authenticate.
+ * para exercitar a validacao, o cadastro e o login.
  */
 const RAIZ = ['fix', 'ture'].join('');
 const ANO = 2026;
 
-/** Aprovada por checkPassword: letras e numeros, 8+ caracteres. */
+/** Aprovada na validacao - tem letras, tem numeros e 8+ caracteres. */
 export function senhaValida(quem: string): string {
   return `${RAIZ}-${quem}-${ANO}`;
 }
