@@ -1,0 +1,10 @@
+{
+  "name": "Roleta a Dois — Versão do GPT",
+  "short_name": "Roleta a Dois",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#100b12",
+  "theme_color": "#100b12",
+  "description": "Jogo adulto consensual para casais, em modo demo local.",
+  "icons": []
+}
