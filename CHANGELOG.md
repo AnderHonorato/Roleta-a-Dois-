@@ -2,6 +2,20 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [1.1.0] — 2026-09-11
+
+### Adicionado
+- **Persistência em IndexedDB** no modo demo (`IndexedDBAdapter`), com o `LocalStorageAdapter` como plano B e migração automática de quem já tinha dados salvos.
+- 13 testes novos cobrindo gravação, leitura, `clear`, migração, proteção contra sobrescrever estado real e queda para o plano B (76 no total).
+
+### Corrigido
+- O banner deixa de esbarrar na cota de ~5MB do `localStorage`. Medido com imagens de ruído incompressível de 1280px (pior caso): o `localStorage` já recusava 6 imagens (8,3MB), enquanto o IndexedDB aceitou 40 (55,2MB).
+- Gravar o estado não paga mais um `JSON.stringify` do objeto inteiro na thread principal a cada alteração.
+
+### Notas
+- A cota do navegador continua existindo e depende do espaço livre do aparelho. Quando estoura, `StorageQuotaError` chega à tela em vez de o progresso sumir em silêncio — esse caso não é engolido por fallback.
+- O `open()` do IndexedDB tem timeout de 4s. Sem ele, um `onblocked` que nunca resolve deixaria o app preso na tela de carregando.
+
 ## [1.0.0] — 2026-09-11
 
 Primeira versão funcional. O repositório continha apenas um README de uma linha; tudo abaixo foi construído do zero.

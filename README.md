@@ -89,7 +89,8 @@ Componentes (features/*)
         │  grava com debounce de 400ms
         ▼
 services/storage/index.ts ← escolhe a implementação
-        ├─ LocalStorageAdapter   (MODO_DEMO_LOCAL=true)
+        ├─ IndexedDBAdapter      (MODO_DEMO_LOCAL=true)
+        │     └─ LocalStorageAdapter como plano B + migração automática
         └─ ApiStorageAdapter     (MODO_DEMO_LOCAL=false)
 ```
 
@@ -108,6 +109,7 @@ Detalhes completos, incluindo o contrato de rotas do backend: [`docs/ARCHITECTUR
 | Build | Vite 5 | Dev server rápido, build enxuto, sem configuração |
 | UI | React 18 + TypeScript (strict) | Tipagem forte no domínio, sem surpresa em refactor |
 | Estado | Context + `useReducer` | O app tem um só estado persistido; uma lib de estado seria peso sem ganho |
+| Persistência | IndexedDB (fallback localStorage) | Cota grande o bastante para as fotos do banner, sem serializar para string |
 | Estilo | CSS puro com custom properties | Temas trocam em uma linha; sem runtime de CSS-in-JS |
 | Roteamento | Hash router próprio (30 linhas) | 8 telas privadas, nenhuma URL compartilhável |
 | Áudio | Web Audio sintetizado | Zero arquivo de som no bundle |
@@ -283,7 +285,7 @@ Pela interface: **Casal → Banner → Adicionar**. Aceita JPG, PNG, WebP e AVIF
 
 Cada imagem tem texto alternativo, ordem e liga/desliga. O intervalo de troca (padrão 30s) fica no mesmo lugar.
 
-> No modo demo o `localStorage` tem cota de ~5MB. Se encher, o app avisa explicitamente e sugere remover imagens — não falha em silêncio.
+> No modo demo as imagens vão para o **IndexedDB**, com cota na casa das centenas de MB. Medido neste projeto: o `localStorage` sozinho já recusava 6 imagens (8,3MB), enquanto o IndexedDB aceitou 40 (55MB). Se ainda assim encher, o app avisa explicitamente e sugere remover imagens — não falha em silêncio.
 
 ---
 
@@ -313,7 +315,7 @@ src/
     audiences.ts           perfis de casal
     achievements.ts        definição das conquistas
   services/
-    storage/               StorageAdapter + Local + API
+    storage/               StorageAdapter + IndexedDB + Local + API
     auth/                  cadastro, login, senha
     config.ts              flags de ambiente
     demoSeed.ts            casal mockado (só demo)
@@ -342,13 +344,14 @@ docs/                      arquitetura, privacidade, screenshots
 
 ## Testes
 
-**63 testes automatizados**, em 5 arquivos:
+**76 testes automatizados**, em 6 arquivos:
 
 - `scoring.test.ts` — multiplicadores, bônus de tempo, penalidade de repetição, piso de 1 ponto, penalidade de troca.
 - `challenges.test.ts` — ids únicos, integridade dos campos, teto de nível, exclusão de categoria, cobertura por perfil.
 - `core.test.ts` — mensagens sem repetição, sorteio com memória, formatação, saneamento, validação de senha, regras de conquista.
 - `auth.test.ts` — PBKDF2, salts distintos, verificação, login genérico, troca e redefinição de senha.
 - `storage.test.ts` — gravação, leitura, estado corrompido, migração de versão, limpeza.
+- `idbStorage.test.ts` — IndexedDB: gravação, leitura, `clear`, migração vinda do `localStorage`, proteção contra sobrescrever estado real, e queda para o plano B quando o IndexedDB não existe.
 
 **Verificação manual em navegador** (Chromium via Playwright), já executada nesta entrega:
 
@@ -368,6 +371,9 @@ docs/                      arquitetura, privacidade, screenshots
 | `prefers-reduced-motion` (resultado sem animação) | ✅ |
 | Skip-link no primeiro Tab, foco visível | ✅ |
 | Nomes acessíveis, labels e alvos de toque em 7 rotas | ✅ |
+| Persistência em IndexedDB, com o `localStorage` ficando vazio | ✅ |
+| Migração de quem já tinha dados no `localStorage` (casal, pontos e tema preservados) | ✅ |
+| 40 imagens / 55MB no banner, com o `localStorage` recusando já na 6ª | ✅ |
 | Erros de console | nenhum |
 
 Contraste medido (WCAG AA exige 4,5:1 para texto normal):
@@ -456,7 +462,7 @@ No modo demo, **nada sai do navegador**. Política completa: [`docs/PRIVACY.md`]
 
 **A página abre em branco.** Verifique o console. Causa mais comum: navegador antigo sem `color-mix()` ou 3D transforms. Requisitos mínimos acima.
 
-**"O armazenamento local encheu."** As imagens do banner ocupam a maior parte da cota de ~5MB do `localStorage`. Remova imagens em Casal → Banner.
+**"O armazenamento do navegador encheu."** As imagens do banner ocupam a maior parte do espaço. Desde a v1.1 elas ficam no IndexedDB, cuja cota é bem maior que a do `localStorage` — mas ela existe e depende do espaço livre do aparelho. Remova imagens em Casal → Banner.
 
 **"Armazenamento bloqueado (janela anônima ou cookies desativados)."** Alguns navegadores bloqueiam `localStorage` em modo anônimo. Use uma janela normal ou libere os dados do site.
 
@@ -508,7 +514,7 @@ Quando o backend estiver no ar, o demo sai em quatro passos:
 
 1. `.env`: `VITE_MODO_DEMO_LOCAL=false` e `VITE_API_URL=https://...`
 2. Apague `src/services/demoSeed.ts` e as importações de `DEMO_CREDENTIALS` em `SettingsScreen.tsx` e do bloco "Modo convidado" em `Onboarding.tsx`.
-3. Em `src/services/storage/index.ts`, remova o ramo `MODO_DEMO_LOCAL ? new LocalStorageAdapter() : ...` e deixe apenas `new ApiStorageAdapter()`. Apague `localAdapter.ts` e `tests/storage.test.ts`.
+3. Em `src/services/storage/index.ts`, remova o ramo `MODO_DEMO_LOCAL ? new IndexedDBAdapter(...) : ...` e deixe apenas `new ApiStorageAdapter()`. Apague `idbAdapter.ts`, `localAdapter.ts`, `tests/storage.test.ts` e `tests/idbStorage.test.ts`, e tire `fake-indexeddb` das devDependencies.
 4. Em `src/services/config.ts`, remova `MODO_DEMO_LOCAL`, `STORAGE_KEY` e `SHOW_DEMO_BADGE`.
 
 Nada mais no app depende do modo demo — a interface `StorageAdapter` isola o resto.

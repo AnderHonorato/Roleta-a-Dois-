@@ -7,7 +7,7 @@ import type { PersistedState } from '@/types';
  * services/storage/index.ts - nenhum componente muda.
  */
 export interface StorageAdapter {
-  readonly kind: 'local' | 'api';
+  readonly kind: 'local' | 'idb' | 'api';
   /** Carrega o estado completo. Retorna null quando nao ha nada salvo. */
   load(): Promise<PersistedState | null>;
   /** Grava o estado completo. */

@@ -16,11 +16,13 @@ features/*  ──► useStore()  ──► app/store.tsx (reducer)
                                     │
                      ┌──────────────┴──────────────┐
                      ▼                             ▼
-          LocalStorageAdapter              ApiStorageAdapter
+          IndexedDBAdapter                 ApiStorageAdapter
           (MODO_DEMO_LOCAL=true)         (MODO_DEMO_LOCAL=false)
+                │
+                └─ LocalStorageAdapter (plano B + migração)
 ```
 
-A interface `StorageAdapter` (`services/storage/types.ts`) tem quatro métodos: `load`, `save`, `clear`, `health`. Qualquer implementação que os cumpra serve — inclusive um adaptador de IndexedDB ou um mock de teste (`setStorage()`).
+A interface `StorageAdapter` (`services/storage/types.ts`) tem quatro métodos: `load`, `save`, `clear`, `health`. Qualquer implementação que os cumpra serve — foi assim que o IndexedDB entrou sem tocar em nenhuma tela, e é assim que um mock de teste entra (`setStorage()`).
 
 Consequência prática: migrar para backend não toca em nenhuma tela.
 
@@ -267,9 +269,39 @@ O catálogo já tem a forma que um CRUD precisa:
 
 ---
 
+## 12.1 Persistência no modo demo
+
+`IndexedDBAdapter` (`services/storage/idbAdapter.ts`) é a implementação ativa quando `MODO_DEMO_LOCAL=true`. Ele recebe um `LocalStorageAdapter` no construtor e o usa como plano B — não o substitui.
+
+**Por que IndexedDB.** As imagens do banner são data URLs. O `localStorage` tem cota de ~5MB e guarda apenas string, então cada gravação paga um `JSON.stringify` do estado inteiro na thread principal. O IndexedDB armazena o objeto direto e trabalha na casa das centenas de MB.
+
+**Migração.** Na primeira abertura depois do upgrade, o IndexedDB está vazio e os dados do casal estão no `localStorage`. O `load()` importa, grava no IndexedDB e limpa a origem, para não ficarem duas cópias divergindo.
+
+Duas perguntas separadas governam isso, e a distinção é deliberada:
+
+| Função | Pergunta | Critério |
+|---|---|---|
+| `substituivel(state)` | o que está no IndexedDB pode ser trocado pelo legado? | sem conta **e** sem casal |
+| `temConteudo(state)` | o legado vale a migração? | tem conta, casal, sessão **ou** qualquer flag de consentimento |
+
+O critério de `temConteudo` é mais amplo de propósito: um casal que só passou pela porta 18+ ainda não tem conta, mas refazer aquilo é trabalho perdido. Já `substituivel` é restrito, para que um estado real nunca seja sobrescrito por sobra de sessão antiga.
+
+**Quedas previstas.** Se o IndexedDB não existe, é bloqueado, ou o `open` nunca resolve (há um timeout de 4s para isso — sem ele o app ficaria preso na tela de carregando), o adaptador passa a usar o plano B e segue funcionando. A exceção é `StorageQuotaError`: cota estourada é erro do usuário e precisa chegar à tela, então não é engolida por fallback.
+
+---
+
 ## 13. Limites conhecidos
 
-- **Cota do `localStorage` (~5MB).** As imagens do banner são data URLs; por isso são redimensionadas para 1280px antes de gravar, e o app avisa explicitamente quando a cota estoura. IndexedDB resolveria — é o próximo passo natural do `StorageAdapter`.
+- **Cota de armazenamento.** Resolvida em boa parte: a persistência do modo demo é IndexedDB desde a v1.1. Medição feita neste projeto, com imagens de ruído incompressível de 1280px (pior caso — fotos reais são bem menores):
+
+  | Imagens | Tamanho | `localStorage` | IndexedDB |
+  |---|---|---|---|
+  | 6 | 8,3MB | cheio | ok |
+  | 12 | 16,6MB | cheio | ok |
+  | 24 | 33,1MB | cheio | ok |
+  | 40 | 55,2MB | cheio | ok |
+
+  A cota ainda existe e depende do espaço livre do aparelho; quando estoura, o erro chega à tela em vez de o progresso sumir em silêncio.
 - **Sem sincronização entre dispositivos** no modo demo. Cada navegador tem o próprio estado.
 - **Hash no cliente não é segurança de servidor.** Está documentado no próprio arquivo (`lib/crypto.ts`) e existe para que nada fique legível em disco, não para substituir o backend.
 - **Verificação de navegador limitada.** A validação desta entrega rodou em Chromium. Safari, Firefox e aparelhos físicos não foram testados.

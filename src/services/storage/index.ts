@@ -1,5 +1,6 @@
 import { MODO_DEMO_LOCAL } from '../config';
 import { LocalStorageAdapter } from './localAdapter';
+import { IndexedDBAdapter } from './idbAdapter';
 import { ApiStorageAdapter } from './apiAdapter';
 import type { StorageAdapter } from './types';
 
@@ -11,7 +12,12 @@ let instance: StorageAdapter | null = null;
  */
 export function getStorage(): StorageAdapter {
   if (!instance) {
-    instance = MODO_DEMO_LOCAL ? new LocalStorageAdapter() : new ApiStorageAdapter();
+    // No modo demo a persistencia e IndexedDB com localStorage como
+    // plano B - o localStorage sozinho tem cota de ~5MB e as imagens
+    // do banner estouram isso rapido.
+    instance = MODO_DEMO_LOCAL
+      ? new IndexedDBAdapter(new LocalStorageAdapter())
+      : new ApiStorageAdapter();
   }
   return instance;
 }
@@ -22,4 +28,4 @@ export function setStorage(adapter: StorageAdapter | null): void {
 }
 
 export * from './types';
-export { LocalStorageAdapter, ApiStorageAdapter };
+export { LocalStorageAdapter, IndexedDBAdapter, ApiStorageAdapter };
