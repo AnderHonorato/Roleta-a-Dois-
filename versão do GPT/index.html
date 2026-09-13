@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#120d16">
+  <title>Roleta a Dois — versão GPT</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <div><strong>Roleta a Dois</strong><small>Ander × Lil</small></div>
+      </div>
+      <button class="icon-btn" id="soundBtn" aria-label="Ativar ou desativar sons">♪</button>
+    </header>
+
+    <section class="hero-banner" aria-label="Banner">
+      <div class="hero-copy">
+        <span class="eyebrow">MODO DEMO LOCAL</span>
+        <strong>O dado provoca. Vocês decidem.</strong>
+        <small>18+ · consentimento sempre</small>
+      </div>
+      <div class="hero-orbit orbit-a"></div>
+      <div class="hero-orbit orbit-b"></div>
+    </section>
+
+    <section class="players-strip" aria-label="Ranking individual">
+      <article class="player-score" id="scoreAnder">
+        <span class="avatar">A</span>
+        <div><small>#1 / #2</small><strong>Ander</strong></div>
+        <b id="anderPoints">0</b>
+      </article>
+      <div class="versus">×</div>
+      <article class="player-score" id="scoreLil">
+        <span class="avatar alt">L</span>
+        <div><small>Maurício</small><strong>Lil</strong></div>
+        <b id="lilPoints">0</b>
+      </article>
+    </section>
+
+    <section class="session-strip">
+      <div><small>Rodadas</small><strong id="rounds">0</strong></div>
+      <div><small>Sequência</small><strong id="streak">×1</strong></div>
+      <div><small>Sessão</small><strong id="sessionTime">00:00</strong></div>
+      <div><small>Sem ação</small><strong id="idleTime">00:00</strong></div>
+    </section>
+
+    <section class="game-stage" id="gameStage" aria-live="polite">
+      <div class="level-line">
+        <span id="levelLabel">QUENTE · 20 PTS</span>
+        <button id="levelBtn" class="soft-btn" type="button">Mudar nível</button>
+      </div>
+
+      <button class="die-button" id="dieButton" type="button" aria-label="Rolar o dado">
+        <span class="die" id="die" aria-hidden="true">
+          <i class="face f1">●</i>
+          <i class="face f2">● ●</i>
+          <i class="face f3">● ● ●</i>
+          <i class="face f4">● ●<br>● ●</i>
+          <i class="face f5">● ●<br> ● <br>● ●</i>
+          <i class="face f6">● ● ●<br>● ● ●</i>
+        </span>
+        <span class="die-shadow"></span>
+      </button>
+
+      <div class="word-pair" id="wordPair">
+        <span id="wordA">TOQUE</span>
+        <em>+</em>
+        <span id="wordB">SURPRESA</span>
+      </div>
+
+      <div class="explanation">
+        <span class="eyebrow">COMO FAZER</span>
+        <h2 id="challengeTitle">Role o dado para começar</h2>
+        <p id="challengeDesc">A combinação aparece acima e a explicação fica aqui, organizada e separada.</p>
+      </div>
+
+      <div class="tease" id="tease">Cada clique muda o clima.</div>
+
+      <div class="main-actions">
+        <button class="primary-btn" id="rollBtn" type="button">Rolar o dado</button>
+        <button class="primary-btn hidden" id="finishBtn" type="button">Finalizar rodada</button>
+      </div>
+
+      <div class="outcome-panel hidden" id="outcomePanel">
+        <span class="eyebrow">O QUE ACONTECEU?</span>
+        <h3>Escolha antes de pontuar</h3>
+        <div class="outcome-grid">
+          <button type="button" data-outcome="done">🔥 Fizemos</button>
+          <button type="button" data-outcome="anderQuit">Ander desistiu</button>
+          <button type="button" data-outcome="lilQuit">Lil desistiu</button>
+          <button type="button" data-outcome="bothQuit">Os dois desistiram</button>
+        </div>
+        <small>Fizeram: ambos pontuam. Se só um desistir, o outro recebe 40% dos pontos da rodada como bônus de coragem.</small>
+      </div>
+
+      <div class="feedback-layer" id="feedbackLayer" aria-hidden="true"></div>
+    </section>
+
+    <section class="history-section">
+      <div class="section-head">
+        <div><span class="eyebrow">PLACAR</span><h3>Ranking da noite</h3></div>
+        <strong id="leaderText">Empatados</strong>
+      </div>
+      <div class="rank-bars">
+        <div class="rank-row"><span>Ander</span><div><i id="anderBar"></i></div><b id="anderRankPts">0</b></div>
+        <div class="rank-row"><span>Lil</span><div><i id="lilBar"></i></div><b id="lilRankPts">0</b></div>
+      </div>
+      <div class="last-result" id="lastResult">Nenhuma rodada finalizada ainda.</div>
+    </section>
+  </main>
+
+  <dialog id="levelDialog" class="level-dialog">
+    <form method="dialog">
+      <div class="dialog-head"><div><span class="eyebrow">INTENSIDADE</span><h2>Até onde o dado pode ir?</h2></div><button value="cancel" class="icon-btn">×</button></div>
+      <div id="levelOptions" class="level-options"></div>
+    </form>
+  </dialog>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
