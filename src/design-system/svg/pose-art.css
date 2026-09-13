@@ -1,0 +1,107 @@
+/* ===========================================================
+   Ilustracoes de execucao.
+
+   As duas figuras sao desenhadas com a paleta do tema ativo, entao
+   a arte troca de cor junto com o resto do produto sem nenhum
+   arquivo de imagem no bundle.
+   =========================================================== */
+
+.pose {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* --- corpos ---
+   Cor solida vinda dos tokens do tema, nao gradiente por url(): um
+   url(#id) dentro de custom property nao resolve de forma confiavel,
+   e a arte simplesmente nao pintava. Duas cores e duas opacidades ja
+   separam as figuras com clareza. */
+.pose__torso,
+.pose__cabeca,
+.pose__cabelo,
+.pose__pescoco {
+  fill: var(--figura-cor, var(--accent));
+}
+
+.pose__membro {
+  fill: none;
+  stroke: var(--figura-cor, var(--accent));
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pose__membro--forte {
+  stroke-width: 9.5;
+  stroke: var(--accent-2);
+  opacity: 0.95;
+}
+
+/* A figura de tras e mais apagada: e isso que cria profundidade e
+   deixa claro quem esta na frente de quem. */
+.pose__fig--b {
+  --figura-cor: var(--accent-3);
+  opacity: 0.5;
+}
+
+.pose__fig--a {
+  --figura-cor: var(--accent);
+}
+
+/* contorno sutil separa as duas silhuetas quando se sobrepoem */
+.pose__fig--a .pose__torso,
+.pose__fig--a .pose__cabeca {
+  stroke: var(--bg-deep);
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+}
+.pose__fig--a .pose__membro {
+  paint-order: stroke fill;
+}
+
+.pose__chao {
+  fill: var(--ink);
+  opacity: 0.07;
+}
+
+/* --- a arte respira devagar quando esta em repouso --- */
+@keyframes pose-respira {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-3px) scale(1.012); }
+}
+
+.pose--viva .pose__fig--a {
+  animation: pose-respira 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: center bottom;
+}
+.pose--viva .pose__fig--b {
+  animation: pose-respira 6.4s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse;
+  transform-origin: center bottom;
+}
+
+/* --- variacoes de uso --- */
+
+/* No painel de resultado.
+   ALTURA EXPLICITA de proposito: com height:auto + max-height o SVG
+   assume a altura intrinseca do aspect ratio e o max-height apenas
+   corta a caixa, deixando a arte fora de vista. Com altura definida,
+   o preserveAspectRatio encaixa a cena inteira, centralizada. */
+.pose--reveal {
+  height: clamp(116px, 33vw, 168px);
+  margin-bottom: calc(var(--s-2) * -1);
+  filter: drop-shadow(0 14px 24px color-mix(in srgb, var(--glow) 40%, transparent));
+}
+
+/* no onboarding: menor, so para dar corpo a escolha de perfil */
+.pose--mini {
+  height: 84px;
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pose--viva .pose__fig--a,
+  .pose--viva .pose__fig--b {
+    animation: none;
+  }
+}

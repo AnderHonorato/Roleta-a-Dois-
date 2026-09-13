@@ -1,0 +1,188 @@
+/* ===========================================================
+   Temas por perfil de casal.
+   Cada tema muda paleta, campo de fundo (gradiente + textura),
+   glow, tratamento de borda, inclinacao dos ornamentos e o
+   peso tipografico de destaque. Nao e "pintar de arco-iris":
+   cada um tem uma temperatura e um gesto proprios.
+   =========================================================== */
+
+:root,
+[data-theme='neutral'] {
+  --bg-deep: #0d0b12;
+  --bg-raise: #161222;
+  --bg-sunken: #09080d;
+  --ink: #f3eef7;
+  --ink-dim: #b7adc4;
+  --ink-faint: #918799;
+  --ink-on-accent: #17101c;
+
+  --accent: #c9a227;
+  --accent-2: #e0c766;
+  --accent-3: #8f6fd6;
+  --danger: #e05263;
+  --success: #59c18a;
+
+  --line: rgba(243, 238, 247, 0.1);
+  --line-strong: rgba(243, 238, 247, 0.22);
+  --focus: #e0c766;
+  --glow: rgba(201, 162, 39, 0.32);
+  --glow-2: rgba(143, 111, 214, 0.28);
+
+  --field: radial-gradient(120% 80% at 15% -10%, #241b33 0%, transparent 55%),
+           radial-gradient(90% 70% at 100% 0%, #1c1424 0%, transparent 60%),
+           linear-gradient(180deg, #0d0b12 0%, #0a0810 100%);
+  --grain-opacity: 0.05;
+  --motif-skew: -4deg;
+  --motif-radius: var(--r-lg);
+  --display-weight: 700;
+}
+
+[data-theme='gay'] {
+  --bg-deep: #060d14;
+  --bg-raise: #0d1a26;
+  --bg-sunken: #040910;
+  --ink: #eaf4ff;
+  --ink-dim: #9fb8cf;
+  --ink-faint: #7f97ad;
+  --ink-on-accent: #04121d;
+
+  --accent: #34c8d6;
+  --accent-2: #6ee7f0;
+  --accent-3: #ff7a45;
+  --danger: #ff5f6d;
+  --success: #4fd6a0;
+
+  --line: rgba(234, 244, 255, 0.11);
+  --line-strong: rgba(52, 200, 214, 0.35);
+  --focus: #6ee7f0;
+  --glow: rgba(52, 200, 214, 0.34);
+  --glow-2: rgba(255, 122, 69, 0.26);
+
+  --field: radial-gradient(110% 75% at 85% -5%, #0f3244 0%, transparent 58%),
+           radial-gradient(85% 60% at 0% 20%, #1a2b3d 0%, transparent 62%),
+           linear-gradient(180deg, #060d14 0%, #04090f 100%);
+  --grain-opacity: 0.045;
+  --motif-skew: -8deg;
+  --motif-radius: var(--r-md);
+  --display-weight: 900;
+}
+
+[data-theme='lesbian'] {
+  --bg-deep: #150710;
+  --bg-raise: #24101c;
+  --bg-sunken: #0d040a;
+  --ink: #fff0f4;
+  --ink-dim: #d5a9ba;
+  --ink-faint: #b08d9c;
+  --ink-on-accent: #1d0611;
+
+  --accent: #ff6b8b;
+  --accent-2: #ffa36c;
+  --accent-3: #b05cc9;
+  --danger: #ff4d6d;
+  --success: #62cfa0;
+
+  --line: rgba(255, 240, 244, 0.12);
+  --line-strong: rgba(255, 107, 139, 0.34);
+  --focus: #ffa36c;
+  --glow: rgba(255, 107, 139, 0.36);
+  --glow-2: rgba(255, 163, 108, 0.28);
+
+  --field: radial-gradient(120% 85% at 20% -10%, #3d1327 0%, transparent 58%),
+           radial-gradient(90% 65% at 95% 15%, #2e1030 0%, transparent 60%),
+           linear-gradient(180deg, #150710 0%, #0c040a 100%);
+  --grain-opacity: 0.055;
+  --motif-skew: 6deg;
+  --motif-radius: var(--r-xl);
+  --display-weight: 600;
+}
+
+[data-theme='hetero'] {
+  --bg-deep: #110709;
+  --bg-raise: #1f1013;
+  --bg-sunken: #0a0406;
+  --ink: #fdf1ec;
+  --ink-dim: #c9a9a2;
+  --ink-faint: #a68d88;
+  --ink-on-accent: #180608;
+
+  --accent: #e0453f;
+  --accent-2: #f08a4b;
+  --accent-3: #d8a657;
+  --danger: #ff5a52;
+  --success: #5cc48d;
+
+  --line: rgba(253, 241, 236, 0.11);
+  --line-strong: rgba(224, 69, 63, 0.32);
+  --focus: #f08a4b;
+  --glow: rgba(224, 69, 63, 0.34);
+  --glow-2: rgba(216, 166, 87, 0.24);
+
+  --field: radial-gradient(115% 80% at 50% -12%, #3a1315 0%, transparent 56%),
+           radial-gradient(80% 60% at 0% 25%, #2a1010 0%, transparent 62%),
+           linear-gradient(180deg, #110709 0%, #090406 100%);
+  --grain-opacity: 0.06;
+  --motif-skew: -2deg;
+  --motif-radius: var(--r-sm);
+  --display-weight: 700;
+}
+
+[data-theme='bi'] {
+  --bg-deep: #0d0817;
+  --bg-raise: #191029;
+  --bg-sunken: #080512;
+  --ink: #f2ecff;
+  --ink-dim: #b3a6d0;
+  --ink-faint: #9186ab;
+  --ink-on-accent: #120a22;
+
+  --accent: #a855f7;
+  --accent-2: #ff5fa2;
+  --accent-3: #3b7dff;
+  --danger: #ff5470;
+  --success: #52cfa5;
+
+  --line: rgba(242, 236, 255, 0.12);
+  --line-strong: rgba(168, 85, 247, 0.34);
+  --focus: #ff5fa2;
+  --glow: rgba(168, 85, 247, 0.36);
+  --glow-2: rgba(59, 125, 255, 0.3);
+
+  --field: radial-gradient(110% 80% at 10% -5%, #2c1152 0%, transparent 56%),
+           radial-gradient(95% 70% at 100% 25%, #14224f 0%, transparent 60%),
+           linear-gradient(180deg, #0d0817 0%, #080511 100%);
+  --grain-opacity: 0.05;
+  --motif-skew: -10deg;
+  --motif-radius: var(--r-lg);
+  --display-weight: 900;
+}
+
+[data-theme='queer'] {
+  --bg-deep: #071110;
+  --bg-raise: #0f211f;
+  --bg-sunken: #040c0b;
+  --ink: #eafff8;
+  --ink-dim: #a2c7bd;
+  --ink-faint: #84a49d;
+  --ink-on-accent: #04100e;
+
+  --accent: #2fd6a6;
+  --accent-2: #d9f75f;
+  --accent-3: #f25fa0;
+  --danger: #ff6b6b;
+  --success: #2fd6a6;
+
+  --line: rgba(234, 255, 248, 0.12);
+  --line-strong: rgba(47, 214, 166, 0.34);
+  --focus: #d9f75f;
+  --glow: rgba(47, 214, 166, 0.32);
+  --glow-2: rgba(242, 95, 160, 0.28);
+
+  --field: radial-gradient(120% 80% at 80% -8%, #10382f 0%, transparent 58%),
+           radial-gradient(90% 65% at 5% 30%, #1a2a3a 0%, transparent 62%),
+           linear-gradient(180deg, #071110 0%, #040b0a 100%);
+  --grain-opacity: 0.05;
+  --motif-skew: 12deg;
+  --motif-radius: var(--r-xs);
+  --display-weight: 600;
+}
