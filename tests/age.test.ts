@@ -32,7 +32,7 @@ describe('verificarMaioridade', () => {
   it('recusa um dia antes de completar 18', () => {
     const r = verificarMaioridade('2008-09-12', HOJE);
     expect(r.ok).toBe(false);
-    expect(r.motivo).toContain(String(IDADE_MINIMA));
+    expect(r.ok ? '' : r.motivo).toContain(String(IDADE_MINIMA));
   });
 
   it('recusa menor de idade', () => {
@@ -49,7 +49,7 @@ describe('verificarMaioridade', () => {
     // 31/02 seria "consertado" para 03/03 pelo Date: precisa cair fora.
     const r = verificarMaioridade('1990-02-31', HOJE);
     expect(r.ok).toBe(false);
-    expect(r.motivo).toContain('nao existe');
+    expect(r.ok ? '' : r.motivo).toContain('nao existe');
   });
 
   it('recusa formato invalido', () => {
