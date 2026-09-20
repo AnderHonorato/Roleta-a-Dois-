@@ -8,7 +8,16 @@
 <article class="player active" id="playerA"><button class="player-icon" data-player="a" aria-label="Escolher ícone de Ander">✦</button><div><small>JOGADOR 1</small><b id="nameA">Ander</b><span id="roleA">Escolhe quem conduz</span></div><strong id="scoreA">0</strong></article><div class="versus">×</div>
 <article class="player" id="playerB"><button class="player-icon alt" data-player="b" aria-label="Escolher ícone de Lil">◒</button><div><small>JOGADOR 2</small><b id="nameB">Lil</b><span id="roleB">Pode virar o jogo</span></div><strong id="scoreB">0</strong></article></section>
 <section class="controls"><div><span>INTENSIDADE</span><button id="intensity">Provocante <b>⌄</b></button></div><div><span>RODADA</span><b id="round">01</b></div><div><span>SEQUÊNCIA</span><b id="streak">×1</b></div></section>
-<section class="roulette-card" id="rouletteCard" aria-live="polite">
+<section class="mode-switch"><button class="mode active" data-mode="roulette">🎡 Roleta</button><button class="mode" data-mode="truth">🍾 Verdade ou Desafio</button></section>
+<section class="truth-game hidden" id="truthGame" aria-live="polite">
+<div class="roulette-head"><div><span class="eyebrow">NOVO MODO · 18+</span><h2>Verdade ou Desafio</h2></div><span class="step" id="truthRound">01</span></div>
+<p class="mode-help">Gire a garrafa. Quando ela parar, a pessoa escolhida decide entre <b>VERDADE</b> ou <b>DESAFIO</b>.</p>
+<div class="bottle-zone"><div class="bottle-pointer">▼</div><div class="bottle" id="bottle"><div class="bottle-neck"></div><div class="bottle-body">♥</div></div></div>
+<div class="bottle-result"><span id="chosenPlayer">A garrafa escolheu...</span><strong id="choiceName">?</strong><small id="choiceHint">Gire para descobrir quem responde.</small></div>
+<div class="truth-actions hidden" id="truthActions"><button data-type="truth">VERDADE<span>Responda com sinceridade.</span></button><button data-type="dare">DESAFIO<span>Faça a tarefa proposta.</span></button></div>
+<div class="prompt-card hidden" id="promptCard"><span class="eyebrow" id="promptType">VERDADE</span><h3 id="promptTitle"></h3><p id="promptDescription"></p><button id="donePrompt" class="spin-btn">Concluído ✓</button><button id="skipPrompt" class="next-btn">Pular esta rodada</button></div>
+<button id="spinBottle" class="spin-btn">Girar a garrafa 🍾</button>
+</section><section class="roulette-card" id="rouletteCard" aria-live="polite">
 <div class="roulette-head"><div><span class="eyebrow" id="stageLabel">PRIMEIRA ROLAGEM</span><h2 id="stageTitle">O que acontece?</h2></div><span class="step" id="step">1 / 2</span></div>
 <div class="wheel-zone"><div class="pointer"></div><div class="wheel-wrap"><div class="wheel" id="wheel"><span style="--i:0">BEIJAR</span><span style="--i:1">ABRAÇAR</span><span style="--i:2">PROVOCAR</span><span style="--i:3">ENCARAR</span><span style="--i:4">ELOGIAR</span><span style="--i:5">SUSSURRAR</span><span style="--i:6">ESCOLHER</span><span style="--i:7">DESAFIAR</span></div><div class="wheel-core"><span>GIRE</span><b>♥</b></div></div></div>
 <div class="result" id="result"><span class="result-label">COMBINAÇÃO</span><strong><i id="wordA">—</i><em>+</em><i id="wordB">—</i></strong><p id="resultText">A primeira rolagem define a ação. A segunda define o jeito.</p></div>
