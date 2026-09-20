@@ -16,7 +16,10 @@ export type MessageEvent =
   | 'longSession'
   | 'sessionEnd'
   | 'achievement'
-  | 'empty';
+  | 'empty'
+  | 'win'
+  | 'loss'
+  | 'flirty';
 
 type Bank = Record<MessageEvent, string[]>;
 
@@ -110,6 +113,24 @@ const base: Bank = {
     'Nao sobrou nada com esses filtros. Solta um pouco.',
     'Voces filtraram tanto que a roleta ficou sem opcao.',
   ],
+  win: [
+    'Ganhou 😏 Agora escolhe quem vai conduzir a proxima.',
+    'Ponto seu. E essa cara de satisfeito nao engana ninguem. 🔥',
+    'Vitória registrada. O outro vai ter que se virar agora. ❤️',
+    'Essa rodada foi sua. Aproveita a vantagem. 😈',
+  ],
+  loss: [
+    'Perdeu 😈 Sem drama. A roleta ainda tem planos.',
+    'Ops... perdeu. Hora de encarar a próxima. 😏',
+    'A sorte virou a cara. Não fica com vergonha. 🔥',
+    'Perdeu a rodada. Pelo menos ganhou uma boa desculpa para continuar. ❤️',
+  ],
+  flirty: [
+    'Essa combinação ficou perigosamente boa. 😏',
+    'Dois homens, uma roleta e zero garantia de tranquilidade. 🔥',
+    'Essa rodada tem química. Não desperdicem. ❤️',
+    'A roleta percebeu a tensão antes de vocês. 👀',
+  ],
 };
 
 /**
@@ -119,6 +140,9 @@ const base: Bank = {
  */
 const byAudience: Partial<Record<Audience, Partial<Bank>>> = {
   gay: {
+    win: ['Bonito. Ganhou e ainda vai ficar se achando. 😏', 'Ponto para você. O outro que aguente a provocação. 🔥'],
+    loss: ['Perdeu, gato. Agora segura a provocação. 😈', 'A sorte escolheu o outro. Faz parte. 😉'],
+    flirty: ['Essa caiu com uma tensão deliciosa. 😏🔥', 'A química de vocês acabou de ganhar uma rodada. ❤️'],
     revealed: ['Saiu essa. Decidam quem comeca.', 'A roleta escolheu. Agora e com os dois.'],
     skipped: ['Serio? Essa era facil.', 'Passou essa. A proxima nao vai ser tao gentil.'],
     confirmed: ['Feito. Placar subindo.', 'Isso ai. Proxima ja.'],
