@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#120811"><meta name="description" content="Roleta a Dois, versão Claude. Jogo 18+ para dois adultos."><title>Roleta a Dois · Claude</title><link rel="stylesheet" href="styles.css"></head>
+<body><main class="app">
+<header class="topbar"><div class="brand"><span class="brand-dot"></span><div><b>Roleta a Dois</b><small>Claude edition · 18+</small></div></div><button id="sound" class="round-btn" aria-label="Ativar sons">⌁</button></header>
+<section class="intro"><div><span class="eyebrow">DOIS ADULTOS · UMA NOITE</span><h1>Deixe a sorte<br><i>escolher o clima.</i></h1><p>Primeira roleta: <b>o que fazer</b>. Segunda roleta: <b>como fazer</b>. A combinação só aparece quando as duas girarem.</p></div><div class="intro-orbit" aria-hidden="true"></div></section>
+<section class="players" aria-label="Jogadores">
+<article class="player active" id="playerA"><button class="player-icon" data-player="a" aria-label="Escolher ícone de Ander">✦</button><div><small>JOGADOR 1</small><b id="nameA">Ander</b><span id="roleA">Escolhe quem conduz</span></div><strong id="scoreA">0</strong></article><div class="versus">×</div>
+<article class="player" id="playerB"><button class="player-icon alt" data-player="b" aria-label="Escolher ícone de Lil">◒</button><div><small>JOGADOR 2</small><b id="nameB">Lil</b><span id="roleB">Pode virar o jogo</span></div><strong id="scoreB">0</strong></article></section>
+<section class="controls"><div><span>INTENSIDADE</span><button id="intensity">Provocante <b>⌄</b></button></div><div><span>RODADA</span><b id="round">01</b></div><div><span>SEQUÊNCIA</span><b id="streak">×1</b></div></section>
+<section class="mode-switch"><button class="mode active" data-mode="roulette">🎡 Roleta</button><button class="mode" data-mode="truth">🍾 Verdade ou Desafio</button></section>
+<section class="truth-game hidden" id="truthGame" aria-live="polite">
+<div class="roulette-head"><div><span class="eyebrow">NOVO MODO · 18+</span><h2>Verdade ou Desafio</h2></div><span class="step" id="truthRound">01</span></div>
+<p class="mode-help">Gire a garrafa. Quando ela parar, a pessoa escolhida decide entre <b>VERDADE</b> ou <b>DESAFIO</b>.</p>
+<div class="bottle-zone"><div class="bottle-pointer">▼</div><div class="bottle" id="bottle"><div class="bottle-neck"></div><div class="bottle-body">♥</div></div></div>
+<div class="bottle-result"><span id="chosenPlayer">A garrafa escolheu...</span><strong id="choiceName">?</strong><small id="choiceHint">Gire para descobrir quem responde.</small></div>
+<div class="truth-actions hidden" id="truthActions"><button data-type="truth">VERDADE<span>Responda com sinceridade.</span></button><button data-type="dare">DESAFIO<span>Faça a tarefa proposta.</span></button></div>
+<div class="prompt-card hidden" id="promptCard"><span class="eyebrow" id="promptType">VERDADE</span><h3 id="promptTitle"></h3><p id="promptDescription"></p><button id="donePrompt" class="spin-btn">Concluído ✓</button><button id="skipPrompt" class="next-btn">Pular esta rodada</button></div>
+<button id="spinBottle" class="spin-btn">Girar a garrafa 🍾</button>
+</section><section class="roulette-card" id="rouletteCard" aria-live="polite">
+<div class="roulette-head"><div><span class="eyebrow" id="stageLabel">PRIMEIRA ROLAGEM</span><h2 id="stageTitle">O que acontece?</h2></div><span class="step" id="step">1 / 2</span></div>
+<div class="wheel-zone"><div class="pointer"></div><div class="wheel-wrap"><div class="wheel" id="wheel"><span style="--i:0">BEIJAR</span><span style="--i:1">ABRAÇAR</span><span style="--i:2">PROVOCAR</span><span style="--i:3">ENCARAR</span><span style="--i:4">ELOGIAR</span><span style="--i:5">SUSSURRAR</span><span style="--i:6">ESCOLHER</span><span style="--i:7">DESAFIAR</span></div><div class="wheel-core"><span>GIRE</span><b>♥</b></div></div></div>
+<div class="result" id="result"><span class="result-label">COMBINAÇÃO</span><strong><i id="wordA">—</i><em>+</em><i id="wordB">—</i></strong><p id="resultText">A primeira rolagem define a ação. A segunda define o jeito.</p></div>
+<button id="spin" class="spin-btn">Girar roleta <span>↻</span></button><button id="next" class="next-btn hidden">Girar a segunda roleta</button>
+</section>
+<section class="outcome hidden" id="outcome"><span class="eyebrow">RODADA CONCLUÍDA</span><h2 id="outcomeTitle">🔥 Mandaram bem.</h2><p id="outcomeText"></p><div class="outcome-actions"><button data-result="done">Fizemos 🔥</button><button data-result="skip">Pulamos 😏</button></div></section>
+<section class="history"><div class="history-head"><div><span class="eyebrow">PLACAR</span><h2>Hoje</h2></div><span id="leader">Empate</span></div><div class="bars"><div><span>Ander</span><i><b id="barA"></b></i><strong id="pointsA">0</strong></div><div><span>Lil</span><i><b id="barB"></b></i><strong id="pointsB">0</strong></div></div><p id="last">A roleta ainda está esperando vocês.</p></section>
+<dialog id="settings"><form method="dialog"><button class="close">×</button><span class="eyebrow">CONFIGURAÇÃO</span><h2>Quem conduz?</h2><div class="role-grid"><button value="dominante">DOMINANTE<small>Conduz esta rodada</small></button><button value="submisso">SUBMISSO<small>Deixa o outro escolher</small></button><button value="ambos">AMBOS<small>Decidem juntos</small></button></div></form></dialog>
+<div class="icon-picker hidden" id="iconPicker"><div class="picker-box"><span class="eyebrow">ÍCONE</span><h3>Escolha seu símbolo</h3><div id="icons"></div><button id="closeIcons">Fechar</button></div></div>
+</main><script src="data.js"></script><script src="app.js"></script></body></html>
